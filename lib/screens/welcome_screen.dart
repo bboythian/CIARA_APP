@@ -1,7 +1,10 @@
+// ignore_for_file: sort_child_properties_last
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:flutter/gestures.dart';
 import 'user_preferences_screen.dart'; // Asegúrate de importar el archivo adecuado
 
 class WelcomeScreen extends StatefulWidget {
@@ -48,29 +51,211 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: Column(
                   children: [
                     const Text(
-                      'Estos términos y condiciones describen las reglas y regulaciones para el uso de nuestra aplicación. '
-                      'Al acceder a esta aplicación, asumimos que acepta estos términos y condiciones en su totalidad. '
-                      'No continúe utilizando la aplicación si no acepta todos los términos y condiciones establecidos en esta página. '
-                      'El siguiente lenguaje se aplica a estos términos y condiciones, política de privacidad y aviso de responsabilidad: '
-                      'Cliente, usted y su se refiere a usted, la persona que accede a esta aplicación y acepta los términos y condiciones de la Compañía.',
+                      'Al usar CIARA, aceptas cumplir con estos términos y condiciones. El uso indebido o violación de estos términos puede resultar en la suspensión o cancelación de tu cuenta.',
                       style: TextStyle(
                         fontFamily: 'FFMetaProText3',
                         color: Color(0xFF002856),
                       ),
                       textAlign: TextAlign.justify,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '1. Uso de la App',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF002856),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'CIARA está diseñada para promover la salud, el bienestar y la mejora del rendimiento académico mediante recomendaciones personalizadas basadas en tus preferencias.',
+                      style: TextStyle(
+                        fontFamily: 'FFMetaProText3',
+                        color: Color(0xFF002856),
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 15),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '2. Privacidad de los Datos',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF002856),
+                        ),
+                      ),
+                    ),
+                    RichText(
+                      textAlign: TextAlign.justify,
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          color: Color(0xFF002856),
+                          fontSize: 15.3,
+                        ),
+                        children: [
+                          const TextSpan(
+                            text:
+                                'Respetamos tu privacidad. Los datos que proporcionas son utilizados únicamente para personalizar las recomendaciones y para fines investigativos, no se compartirán con terceros sin tu consentimiento. Consulta nuestra ',
+                          ),
+                          TextSpan(
+                            text: 'Política de Privacidad',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration
+                                  .underline, // Subrayado para indicar que es un enlace
+                              color: Color(0xFF002856), // Color del enlace
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                _showPrivacyPolicyDialog(context);
+                              },
+                          ),
+                          const TextSpan(
+                            text: ' para más detalles.',
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '3. Modificaciones en el Servicio',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF002856),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'Nos reservamos el derecho de modificar, suspender o descontinuar temporal o permanentemente cualquier parte de la app sin previo aviso.',
+                      style: TextStyle(
+                        fontFamily: 'FFMetaProText3',
+                        color: Color(0xFF002856),
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 15),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '4. Propiedad Intelectual',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF002856),
+                        ),
+                      ),
+                    ),
+                    RichText(
+                      textAlign: TextAlign.justify,
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          color: Color(0xFF002856),
+                          fontSize: 15.3,
+                        ),
+                        children: [
+                          TextSpan(
+                            text:
+                                'Todo el contenido y la tecnología de CIARA son propiedad del proyecto',
+                          ),
+                          TextSpan(
+                            text:
+                                '“Evaluación del impacto de las ciberadicciones en el rendimiento académico, salud y bienestar de los estudiantes universitarios de la ciudad de Cuenca”.',
+                            style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '5. Limitación de Responsabilidad',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF002856),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'CIARA ofrece recomendaciones para disminuir el uso de pantallas, esta versión corresponde a la fase de prueba. No nos responsabilizamos por la precisión de las recomendaciones, usted es libre de decidir la ejecución de las recomendaciones.',
+                      style: TextStyle(
+                        fontFamily: 'FFMetaProText3',
+                        color: Color(0xFF002856),
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 15),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '6. Suspensión de Cuenta',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF002856),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'Nos reservamos el derecho de suspender o cancelar tu cuenta si detectamos violaciones a estos términos, uso indebido o cualquier actividad ilegal.',
+                      style: TextStyle(
+                        fontFamily: 'FFMetaProText3',
+                        color: Color(0xFF002856),
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 15),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '7. Soporte y contacto',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText3',
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF002856),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'Si tienes dudas o consultas sobre estos términos, puedes contactarnos a través del soporte de CIARA.',
+                      style: TextStyle(
+                        fontFamily: 'FFMetaProText3',
+                        color: Color(0xFF002856),
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Checkbox(
                           value: _isAccepted,
+                          activeColor: Color(0xFF002856),
                           onChanged: (bool? value) {
                             setState(() {
                               _isAccepted = value ?? false;
                             });
                           },
                         ),
-                        const Text('Aceptar términos y condiciones'),
+                        const Text(
+                          'Aceptar términos y condiciones',
+                          style: TextStyle(
+                            fontFamily: 'FFMetaProText3',
+                            color: Color(0xFF002856),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -102,13 +287,234 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
+  void _showPrivacyPolicyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Política de Privacidad',
+            style: TextStyle(
+              fontFamily: 'FFMetaProText3',
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF002856),
+            ),
+          ),
+          content: const SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '1. Introducción',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'La presente Política de Privacidad describe cómo recopilamos, utilizamos y protegemos tu información personal al utilizar nuestra app. Al usar CIARA, aceptas esta política.',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '2. Información que Recopilamos',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'Recopilamos la siguiente información:',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                Text(
+                  '- Datos Personales: Dirección de correo electrónico (para la validación de participación en esta etapa).\n'
+                  '- Datos de Uso: Información sobre cómo interactúas con tus aplicaciones, incluyendo preferencias y tiempo de uso.',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '3. Uso de la Información',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'Utilizamos la información recopilada para:',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                Text(
+                  '- Proporcionar y mejorar nuestras recomendaciones personalizadas. \n'
+                  '- Ejecutar la investigación sobre la efectividad de CIARA para combatir y/o prevenir la ciberadicción.',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '4. Protección de la Información',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'Tomamos medidas de seguridad para proteger tu información personal contra el acceso no autorizado, alteración, divulgación o destrucción. Únicamente los miembros del equipo tienen acceso a la informaciòn',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '5. Compartir Información',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'No vendemos ni compartimos tu información personal con terceros, excepto en los siguientes casos:\n '
+                  '- Para cumplir con la ley o responder a solicitudes legales.\n'
+                  '- Con tu consentimiento explícito.',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '6. Retención de Datos',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'Retendremos su información personal sólo durante el tiempo necesario para cumplir con los propósitos establecidos en esta política, o según lo requiera la ley.',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '7. Derechos del Usuario',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'Tienes el derecho de:\n '
+                  '- Acceder a tu información personal.\n'
+                  '- Solicitar la corrección de datos inexactos.\n'
+                  '- Eliminar tu cuenta y la información asociada.\n',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '8. Cambios en la Política de Privacidad',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'Podemos actualizar esta Política de Privacidad en cualquier momento. Notificaremos a los usuarios sobre cambios significativos a través de la app o por correo electrónico.',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+                SizedBox(height: 10), // Espacio entre párrafos
+                Text(
+                  '9. Soporte y Contacto',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF002856),
+                  ),
+                ),
+                Text(
+                  'Si tienes preguntas o inquietudes sobre esta política, puedes contactarnos a través del soporte en CIARA.',
+                  style: TextStyle(
+                    fontFamily: 'FFMetaProText3',
+                    color: Color(0xFF002856),
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text(
+                'Volver',
+                style: TextStyle(
+                  fontFamily: 'FFMetaProText2',
+                  fontSize: 15,
+                  color: Colors.white, // Color del texto
+                ),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF002856), // Color de fondo
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 8.0), // Ajuste del padding
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   //Muestra el panel inicial
   void _showWelcomeModal(BuildContext context) {
     Future.delayed(Duration(milliseconds: 600), () {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        backgroundColor: const Color(0xFF002856),
+        backgroundColor: Color(0xFF002856),
         builder: (BuildContext context) {
           return FractionallySizedBox(
             heightFactor: 0.80,
@@ -249,13 +655,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       });
                       return;
                     }
-                    print('Enviando solicitud al servidor...');
+                    print('Enviando solicitud al servidor.s..');
                     print('Correo electrónico: $email');
                     // Validar correo en el servidor
-                    // var url = Uri.parse(
-                    //     'https://ingsoftware.ucuenca.edu.ec/validar-email');
-                    var url =
-                        Uri.parse('http://10.24.160.183:8081/validar-email');
+                    var url = Uri.parse(
+                        'https://ingsoftware.ucuenca.edu.ec/validar-email');
+                    // var url =
+                    //     Uri.parse('http://10.24.161.24:8081/validar-email');
                     var response = await http.post(
                       url,
                       headers: {"Content-Type": "application/json"},
@@ -279,7 +685,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         );
                       } else {
                         setState(() {
-                          errorMessage = 'Correo no registrado';
+                          errorMessage = 'Correo existente en otro proceso';
                         });
                       }
                     } else {
