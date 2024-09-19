@@ -510,16 +510,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   //Muestra el panel inicial
   void _showWelcomeModal(BuildContext context) {
-    Future.delayed(Duration(milliseconds: 600), () {
+    Future.delayed(const Duration(milliseconds: 600), () {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        backgroundColor: Color(0xFF002856),
+        backgroundColor: const Color(0xFF002856),
         builder: (BuildContext context) {
           return FractionallySizedBox(
             heightFactor: 0.80,
             child: Container(
-              padding: EdgeInsets.all(50.0),
+              padding: const EdgeInsets.all(50.0),
               // color: Color(0xFF002856),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -574,139 +574,184 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _showEmailDialog(BuildContext context) {
     String errorMessage = '';
+    bool isLoading = false;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              title: const Text(
-                'Ingresar correo electrónico',
-                style: TextStyle(
-                  fontFamily: 'FFMetaProText2',
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF002856),
-                ),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: _emailController,
-                    style: const TextStyle(
-                      color: Color(0xFF002856), // Color del texto del input
-                      fontFamily: 'FFMetaProText3',
-                      fontSize: 16,
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    // inputFormatters: [
-                    //   FilteringTextInputFormatter.digitsOnly,
-                    // ],
-                    cursorColor: Color(0xFF002856),
-                    decoration: InputDecoration(
-                      labelText: 'Correo electrónico*',
-                      labelStyle: const TextStyle(
-                        color: Color(0xFF002856),
-                        fontFamily: 'FFMetaProText3',
-                        fontSize: 16,
-                      ),
-                      enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Color(
-                              0xFFA51008), // Color de la línea inferior cuando no está enfocado
-                        ),
-                      ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Color(
-                              0xFFA51008), // Color de la línea inferior cuando está enfocado
-                        ),
-                      ),
-                      errorText: errorMessage.isEmpty ? null : errorMessage,
-                    ),
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.white, // Color de fondo
-                    onPrimary: Color(0xFF002856), // Color del texto
-                  ),
-                  child: const Text(
-                    'Cancelar',
+            return Stack(
+              children: [
+                AlertDialog(
+                  backgroundColor: Colors.white,
+                  title: const Text(
+                    'Ingresar correo electrónico',
                     style: TextStyle(
                       fontFamily: 'FFMetaProText2',
-                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF002856),
                     ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    String email = _emailController.text;
-                    if (email.isEmpty ||
-                        !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-                      setState(() {
-                        errorMessage = 'Por favor ingrese un correo válido';
-                      });
-                      return;
-                    }
-                    print('Enviando solicitud al servidor.s..');
-                    print('Correo electrónico: $email');
-                    // Validar correo en el servidor
-                    var url = Uri.parse(
-                        'https://ingsoftware.ucuenca.edu.ec/validar-email');
-                    // var url =
-                    //     Uri.parse('http://10.24.161.24:8081/validar-email');
-                    var response = await http.post(
-                      url,
-                      headers: {"Content-Type": "application/json"},
-                      body: json.encode({'email': email}),
-                    );
-
-                    if (response.statusCode == 200) {
-                      var responseBody = json.decode(response.body);
-                      print('Respuesta del servidor:');
-                      print(responseBody);
-                      if (responseBody['exists'] == true) {
-                        // Guardar correo y navegar a la siguiente pantalla
-                        SharedPreferences prefs =
-                            await SharedPreferences.getInstance();
-                        prefs.setString('email', email);
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UserPreferencesScreen(),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: _emailController,
+                        style: const TextStyle(
+                          color: Color(0xFF002856),
+                          fontFamily: 'FFMetaProText3',
+                          fontSize: 16,
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        cursorColor: Color(0xFF002856),
+                        decoration: InputDecoration(
+                          labelText: 'Correo electrónico*',
+                          labelStyle: const TextStyle(
+                            color: Color(0xFF002856),
+                            fontFamily: 'FFMetaProText3',
+                            fontSize: 16,
                           ),
-                        );
-                      } else {
-                        setState(() {
-                          errorMessage = 'Correo existente en otro proceso';
-                        });
-                      }
-                    } else {
-                      setState(() {
-                        errorMessage = 'Correo no registrado para el proyecto';
-                      });
-                      print('Error en la solicitud: ${response.statusCode}');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xFF002856), // Color de fondo
-                    onPrimary: Colors.white, // Color del texto
+                          enabledBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0xFFA51008),
+                            ),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0xFFA51008),
+                            ),
+                          ),
+                          errorText: errorMessage.isEmpty ? null : errorMessage,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: const Text(
-                    'Guardar',
-                    style: TextStyle(
-                      fontFamily: 'FFMetaProText2',
-                      fontSize: 20,
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              Navigator.of(context).pop();
+                            },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.white,
+                        onPrimary: Color(0xFF002856),
+                      ),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText2',
+                          fontSize: 20,
+                        ),
+                      ),
                     ),
-                  ),
+                    ElevatedButton(
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              String email = _emailController.text;
+                              if (email.isEmpty ||
+                                  !RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                                      .hasMatch(email)) {
+                                setState(() {
+                                  errorMessage =
+                                      'Por favor ingrese un correo válido';
+                                });
+                                return;
+                              }
+
+                              setState(() {
+                                isLoading = true;
+                              });
+
+                              try {
+                                var url = Uri.parse(
+                                    'https://ingsoftware.ucuenca.edu.ec/validar-email');
+                                var response = await http.post(
+                                  url,
+                                  headers: {"Content-Type": "application/json"},
+                                  body: json.encode({'email': email}),
+                                );
+
+                                if (response.statusCode == 200) {
+                                  var responseBody = json.decode(response.body);
+                                  if (responseBody['exists'] == true) {
+                                    SharedPreferences prefs =
+                                        await SharedPreferences.getInstance();
+                                    prefs.setString('email', email);
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            UserPreferencesScreen(),
+                                      ),
+                                    );
+                                  } else {
+                                    setState(() {
+                                      errorMessage =
+                                          'Correo existente en otro proceso';
+                                    });
+                                  }
+                                } else {
+                                  setState(() {
+                                    errorMessage =
+                                        'Correo no registrado para el proyecto';
+                                  });
+                                }
+                              } catch (e) {
+                                setState(() {
+                                  errorMessage = 'Error en la conexión';
+                                });
+                              } finally {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        primary: const Color(0xFF002856),
+                        onPrimary: Colors.white,
+                      ),
+                      child: const Text(
+                        'Guardar',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText2',
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                if (isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.5), // Fondo opaco
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: CircularProgressIndicator(
+                              color: Colors.white, // Color del indicador
+                              strokeWidth: 8, // Grosor del indicador
+                            ),
+                          ),
+                          SizedBox(height: 14),
+                          Text(
+                            'Cargando...',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: 'FFMetaProText2',
+                              color: Colors.white, // Color del texto
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
               ],
             );
           },

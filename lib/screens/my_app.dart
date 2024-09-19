@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:usage_stats/usage_stats.dart';
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -86,28 +84,28 @@ class _MyAppState extends State<MyApp> {
             _convertTimeToMinutes(info.totalTimeInForeground),
       };
     }).toList());
-    print('Fecha acstual: $formattedDate');
+    print('Fecha actual: $formattedDate');
     print('Mayor consumo en la hora: $mostHour');
     print('Datos de uso: $dataToSend');
 
-    try {
-      var url = Uri.parse('https://ingsoftware.ucuenca.edu.ec/enviar-datos');
-      // var url = Uri.parse('http://10.24.161.24:8081/enviar-datos');
-      var response = await http.post(
-        url,
-        body: {
-          'email': widget.email,
-          'fecha': formattedDate,
-          'mayorConsumo': mostHour,
-          'usageData': jsonEncode(dataToSend),
-        },
-      );
+    // try {
+    //   var url = Uri.parse('https://ingsoftware.ucuenca.edu.ec/enviar-datos');
+    //   // var url = Uri.parse('http://10.24.161.24:8081/enviar-datos');
+    //   var response = await http.post(
+    //     url,
+    //     body: {
+    //       'email': widget.email,
+    //       'fecha': formattedDate,
+    //       'mayorConsumo': mostHour,
+    //       'usageData': jsonEncode(dataToSend),
+    //     },
+    //   );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-    } catch (error) {
-      print('Error al enviar los datos: $error');
-    }
+    //   print('Response status: ${response.statusCode}');
+    //   print('Response body: ${response.body}');
+    // } catch (error) {
+    //   print('Error al enviar los datos: $error');
+    // }
 
     // _showNotification("CIARA: Reporte diario enviado exitosamente!");
   }
@@ -289,7 +287,7 @@ class _MyAppState extends State<MyApp> {
       }
 
       setState(() {
-        _mostActiveHour = '$maxUsageHour:00 - ${maxUsageHour + 1}:00';
+        _mostActiveHour = '$maxUsageHour:00';
         _usageData = usageByApp.entries
             .map((entry) => {
                   'packageName': entry.key,
