@@ -26,23 +26,68 @@ class UsageService {
   static late String email;
   static Future<int> getTotalUsageToday() async {
     DateTime now = DateTime.now();
-    DateTime startOfDay =
-        DateTime(now.year, now.month, now.day); // Inicio del día a las 00:00
+    DateTime startOfDay = DateTime(now.year, now.month, now.day, 0, 0, 0);
+    int totalTimeAfterFiltering =
+        0; // Variable para almacenar el tiempo total después de la filtración
 
-    // Consultar las estadísticas de uso desde el inicio del día hasta ahora
-    List<UsageInfo> usageStats =
-        await UsageStats.queryUsageStats(startOfDay, now);
+    // Obtener los eventos de uso desde el inicio del día hasta ahora
+    List<EventUsageInfo> events = await UsageStats.queryEvents(startOfDay, now);
 
-    int totalTimeInForeground = 0;
+    Map<String, int> usageByApp = {};
+    Map<String, int> foregroundTimes = {};
 
-    // Sumar el tiempo en primer plano de cada aplicación
-    for (var info in usageStats) {
-      if (info.totalTimeInForeground != null) {
-        totalTimeInForeground += int.tryParse(info.totalTimeInForeground!) ?? 0;
+    for (var event in events) {
+      DateTime eventTime =
+          DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
+      String packageName = event.packageName ?? 'Unknown';
+
+      if (event.eventType == "1") {
+        foregroundTimes[packageName] = eventTime.millisecondsSinceEpoch;
+      } else if (event.eventType == "2") {
+        if (foregroundTimes.containsKey(packageName)) {
+          int foregroundTime =
+              eventTime.millisecondsSinceEpoch - foregroundTimes[packageName]!;
+          usageByApp[packageName] =
+              (usageByApp[packageName] ?? 0) + foregroundTime;
+          foregroundTimes.remove(packageName);
+        }
       }
     }
+    List<String> excludedPackages = [
+      'com.oppo.launcher',
+      'com.sec.android.app.launcher',
+      // 'com.example.ciara',
+      'com.android.settings'
+    ];
+    List<UsageInfo> usageInfoList = [];
 
-    return totalTimeInForeground; // Tiempo total de uso en milisegundos
+    for (var app in usageByApp.keys) {
+      int totalTimeInMilliseconds = usageByApp[app]!;
+
+      if (!excludedPackages.contains(app) && totalTimeInMilliseconds >= 60000) {
+        int seconds = (totalTimeInMilliseconds / 1000).floor();
+        int minutes = (seconds / 60).floor();
+        int hours = (minutes / 60).floor();
+        minutes = minutes % 60;
+        seconds = seconds % 60;
+
+        usageInfoList.add(
+          UsageInfo(
+            packageName: app,
+            totalTimeInForeground: '$hours h $minutes m $seconds s',
+          ),
+        );
+        // Sumar al tiempo total después de la filtración
+        totalTimeAfterFiltering += totalTimeInMilliseconds;
+      }
+    }
+    // Convertir el tiempo total a minutos después de la filtración
+    int totalMinutesAfterFiltering = (totalTimeAfterFiltering / 60000).floor();
+
+    print(
+        "USAGE_SERVICE: Tiempo total de uso : $totalMinutesAfterFiltering minutos");
+
+    return totalTimeAfterFiltering; // Tiempo total de uso en milisegundos
   }
 
   static Future<String> getMostActiveHour(DateTime date) async {

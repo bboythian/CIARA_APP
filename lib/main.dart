@@ -3,8 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/user_preferences_screen.dart';
 import 'screens/my_app.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+// import 'package:timezone/data/latest.dart' as tz;
+// import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:isolate';
 import 'dart:ui';
@@ -13,23 +13,39 @@ import 'services/background_service.dart';
 const String isolateName = 'isolate';
 
 void main() async {
+  // Asegurarse de que Flutter esté inicializado antes de cualquier otra operación
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inicializar el WorkManager y el Android Alarm Manager
-  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  await AndroidAlarmManager.initialize();
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+  // await AndroidAlarmManager.initialize();
+
+  // Iniciar la tarea periódica cada 15 minutos con WorkManager
+  Workmanager().registerPeriodicTask(
+    "checkUsageTask", // Nombre único de la tarea
+    "checkDailyUsage", // Nombre de la tarea que ejecutará el método checkUsage
+    frequency: Duration(minutes: 15), // Intervalo de 15 minutos
+    initialDelay: Duration(minutes: 1), // Delay inicial antes de comenzar
+    existingWorkPolicy: ExistingWorkPolicy.keep, // Evita sobrescribir tareas
+  );
 
   // Mostrar la pantalla de carga inmediatamente
   runApp(MyAppInitializer());
 
-  // Inicializar el Isolate para tareas de fondo
+  // Inicializar el Isolate para tareas en segundo plano después de que la app esté completamente cargada
   initializeIsolate();
 }
 
+@pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    await BackgroundService.checkUsage(); // Monitorea el uso del teléfono
-    return Future.value(true);
+    try {
+      await BackgroundService.checkUsage();
+      return Future.value(true); // Marca la tarea como completada
+    } catch (e) {
+      print("Error en la tarea de WorkManager: $e");
+      return Future.value(false); // Marca la tarea como fallida
+    }
   });
 }
 
@@ -120,10 +136,10 @@ Future<Map<String, dynamic>> initializeApp() async {
   bool? hasCompletedPreferences = prefs.getBool('hasCompletedPreferences');
 
   // Inicializar zonas horarias
-  tz.initializeTimeZones();
+  // tz.initializeTimeZones();
 
   // Inicializar servicios no críticos
-  initializeNonCriticalServices();
+  await initializeNonCriticalServices();
 
   return {
     'storedEmail': storedEmail,
@@ -133,14 +149,18 @@ Future<Map<String, dynamic>> initializeApp() async {
 
 // Inicializar dependencias no críticas en segundo plano
 Future<void> initializeNonCriticalServices() async {
-  await BackgroundService.registerUsageMonitoringTask();
-  // await AndroidAlarmManager.periodic(
-  //   const Duration(minutes: 15), // Monitorear cada 15 minutos
-  //   0,
-  //   BackgroundService.checkUsage, // Monitorear uso de pantalla
-  //   exact: true,
-  //   wakeup: true,
-  // );
+  try {
+    await BackgroundService.registerUsageMonitoringTask();
+    // await AndroidAlarmManager.periodic(
+    //   const Duration(minutes: 15),
+    //   0,
+    //   BackgroundService.checkUsage,
+    //   exact: true,
+    //   wakeup: true,
+    // );
+  } catch (e) {
+    print("Error al inicializar servicios no críticos: $e");
+  }
 }
 
 // Determinar qué pantalla mostrar después de la inicialización
@@ -166,7 +186,7 @@ class MyAppWithLoading extends StatelessWidget {
   }
 }
 
-// Inicializa el isolate para tareas de fondo
+// Inicializar el Isolate para tareas de fondo
 void initializeIsolate() {
   final ReceivePort port = ReceivePort();
   final isRegistered = IsolateNameServer.lookupPortByName(isolateName);

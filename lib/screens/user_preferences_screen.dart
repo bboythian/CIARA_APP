@@ -114,6 +114,12 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
 
     // Navegar a la aplicación principal
     // ignore: use_build_context_synchronously
+    // Navigator.pushReplacement(
+    //   context,
+    //   MaterialPageRoute(
+    //       builder: (context) => MyApp(email: prefs.getString('email')!)),
+    // );
+    // Navegar a la aplicación principal y bloquear volver a la pantalla de preferencias
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -125,195 +131,204 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          //Se crea el contenido de la vista de preferencias
-          appBar: AppBar(
-            title: const Text(
-              'Perfil de Usuario',
-              style: TextStyle(
-                fontFamily: 'FFMetaProText2',
-                fontWeight: FontWeight.bold,
+    return WillPopScope(
+      onWillPop: () async {
+        return false; // Bloquear el botón de retroceso
+      },
+      child: Stack(
+        children: [
+          Scaffold(
+            //Se crea el contenido de la vista de preferencias
+            appBar: AppBar(
+              title: const Text(
+                'Perfil de Usuario',
+                style: TextStyle(
+                  fontFamily: 'FFMetaProText2',
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              backgroundColor: Color(0xFF002856),
+              iconTheme: const IconThemeData(
                 color: Colors.white,
               ),
             ),
-            backgroundColor: Color(0xFF002856),
-            iconTheme: const IconThemeData(
-              color: Colors.white,
-            ),
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Selecciona según corresponda:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+            body: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Selecciona según corresponda:',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
 
-                  const SizedBox(height: 10),
-                  const Text('1. ¿Tienes mascotas?'),
-                  _buildToggleButtons('mascota', ['Si', 'No']),
-                  const SizedBox(height: 20),
-                  const Text('2. ¿Cómo manejas tus responsabilidades en casa?'),
-                  _buildToggleButtons('responsabilidadesEnCasa', [
-                    'Cumplo con todas',
-                    'Solo cuando me lo piden',
-                    'Rara vez las cumplo',
-                    'No tengo responsabilidades'
-                  ]),
-                  const SizedBox(height: 10),
-                  const Text('3. ¿Cómo realizas tus tareas universitarias?'),
-                  _buildToggleButtons('tareasUniversitarias', [
-                    'Con anticipación',
-                    'Dentro del plazo',
-                    'En el último momento',
-                    'A veces me olvido'
-                  ]),
-                  const SizedBox(height: 10),
-                  const Text(
-                      '4. ¿Cómo describirías el estado de tu espacio personal en general?'),
-                  _buildToggleButtons('espacioOrdenado', [
-                    'Siempre ordenado',
-                    'Generalmente ordenado',
-                    'A veces desordenado, pero lo arreglo',
-                    'A menudo desordenado'
-                  ]),
-                  const SizedBox(height: 10),
-                  const Text(
-                      '5. Selecciona 3 actividades FUERA DE CASA que más disfrutas.'),
-                  _buildMultipleChoiceToggleButtons('actividadesAireLibre', [
-                    'Practicar algún deporte o actividad física',
-                    'Salir a caminar',
-                    'Salir a comer',
-                    'Ir al cine',
-                    'Salir de compras o al centro comercial',
-                    'Socializar con amigos o pareja',
-                    'Acampar',
-                    'Salir de fiesta',
-                    'Visitar lugares nuevos',
-                    'Hacer senderismo o excursiones fuera de la ciudad',
-                    'Participar en actividades culturales',
-                    'Fotografiar entornos y elementos diversos',
-                    'Realizar voluntariado',
-                    'Visitar museos o exposiciones',
-                    'Asistir a seminarios/cursos'
-                  ]),
-                  const SizedBox(height: 10),
-                  const Text(
-                      '6. Selecciona 3 actividades EN CASA que más disfrutes SIN USAR TECNOLOGÍA'),
-                  _buildMultipleChoiceToggleButtons('actividadesEnCasa', [
-                    'Leer',
-                    'Tocar algún instrumento',
-                    'Hacer manualidades',
-                    'Socializar con familia o amigos',
-                    'Cocinar',
-                    'Rutinas de belleza o cuidado personal',
-                    'Juegos de mesa o rompecabezas',
-                    'Practicar meditación o yoga',
-                    'Hacer ejercicio en casa',
-                    'Escritura creativa',
-                    'Pintar o dibujar',
-                    'Hacer costura o tejer',
-                    'Organizar o limpiar',
-                    'Jardinería',
-                    'Pasar tiempo con tu mascota',
-                  ]),
+                    const SizedBox(height: 10),
+                    const Text('1. ¿Tienes mascotas?'),
+                    _buildToggleButtons('mascota', ['Si', 'No']),
+                    const SizedBox(height: 20),
+                    const Text(
+                        '2. ¿Cómo manejas tus responsabilidades en casa?'),
+                    _buildToggleButtons('responsabilidadesEnCasa', [
+                      'Cumplo con todas',
+                      'Solo cuando me lo piden',
+                      'Rara vez las cumplo',
+                      'No tengo responsabilidades'
+                    ]),
+                    const SizedBox(height: 10),
+                    const Text('3. ¿Cómo realizas tus tareas universitarias?'),
+                    _buildToggleButtons('tareasUniversitarias', [
+                      'Con anticipación',
+                      'Dentro del plazo',
+                      'En el último momento',
+                      'A veces me olvido'
+                    ]),
+                    const SizedBox(height: 10),
+                    const Text(
+                        '4. ¿Cómo describirías el estado de tu espacio personal en general?'),
+                    _buildToggleButtons('espacioOrdenado', [
+                      'Siempre ordenado',
+                      'Generalmente ordenado',
+                      'A veces desordenado, pero lo arreglo',
+                      'A menudo desordenado'
+                    ]),
+                    const SizedBox(height: 10),
+                    const Text(
+                        '5. Selecciona 3 actividades FUERA DE CASA que más disfrutas.'),
+                    _buildMultipleChoiceToggleButtons('actividadesAireLibre', [
+                      'Practicar algún deporte o actividad física',
+                      'Salir a caminar',
+                      'Salir a comer',
+                      'Ir al cine',
+                      'Salir de compras o al centro comercial',
+                      'Socializar con amigos o pareja',
+                      'Acampar',
+                      'Salir de fiesta',
+                      'Visitar lugares nuevos',
+                      'Hacer senderismo o excursiones fuera de la ciudad',
+                      'Participar en actividades culturales',
+                      'Fotografiar entornos y elementos diversos',
+                      'Realizar voluntariado',
+                      'Visitar museos o exposiciones',
+                      'Asistir a seminarios/cursos'
+                    ]),
+                    const SizedBox(height: 10),
+                    const Text(
+                        '6. Selecciona 3 actividades EN CASA que más disfrutes SIN USAR TECNOLOGÍA'),
+                    _buildMultipleChoiceToggleButtons('actividadesEnCasa', [
+                      'Leer',
+                      'Tocar algún instrumento',
+                      'Hacer manualidades',
+                      'Socializar con familia o amigos',
+                      'Cocinar',
+                      'Rutinas de belleza o cuidado personal',
+                      'Juegos de mesa o rompecabezas',
+                      'Practicar meditación o yoga',
+                      'Hacer ejercicio en casa',
+                      'Escritura creativa',
+                      'Pintar o dibujar',
+                      'Hacer costura o tejer',
+                      'Organizar o limpiar',
+                      'Jardinería',
+                      'Pasar tiempo con tu mascota',
+                    ]),
 
-                  const SizedBox(height: 10),
-                  const Text('7. ¿Cuál es tu expectativa al usar CIARA?'),
-                  _buildToggleButtons('motivacion', [
-                    'Mejorar mi bienestar físico y mental',
-                    'Aumentar mi productividad en estudios',
-                    'Fortalecer mis relaciones personales',
-                    'Encontrar nuevas formas de ocio y entretenimiento'
-                  ]),
-                  //here
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 10),
+                    const Text('7. ¿Cuál es tu expectativa al usar CIARA?'),
+                    _buildToggleButtons('motivacion', [
+                      'Mejorar mi bienestar físico y mental',
+                      'Aumentar mi productividad en estudios',
+                      'Fortalecer mis relaciones personales',
+                      'Encontrar nuevas formas de ocio y entretenimiento'
+                    ]),
+                    //here
+                    const SizedBox(height: 20),
 
-                  ElevatedButton(
-                    onPressed: _isFormComplete
-                        ? () async {
-                            setState(() {
-                              isLoading = true; // Mostrar indicador de carga
-                            });
+                    ElevatedButton(
+                      onPressed: _isFormComplete
+                          ? () async {
+                              setState(() {
+                                isLoading = true; // Mostrar indicador de carga
+                              });
 
-                            await _submitPreferences(); // Ejecutar el método que ya tarda 2 segundos
+                              await _submitPreferences(); // Ejecutar el método que ya tarda 2 segundos
 
-                            setState(() {
-                              isLoading =
-                                  false; // Ocultar indicador de carga cuando termine
-                            });
-                          }
-                        : null,
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                        (Set<MaterialState> states) {
-                          if (states.contains(MaterialState.disabled)) {
+                              setState(() {
+                                isLoading =
+                                    false; // Ocultar indicador de carga cuando termine
+                              });
+                            }
+                          : null,
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states) {
+                            if (states.contains(MaterialState.disabled)) {
+                              return Colors
+                                  .grey; // Color cuando el botón está deshabilitado
+                            }
+                            return const Color(
+                                0xFF002856); // Color cuando el botón está habilitado
+                          },
+                        ),
+                        foregroundColor:
+                            MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states) {
+                            if (states.contains(MaterialState.disabled)) {
+                              return Colors
+                                  .black; // Color del texto cuando está deshabilitado
+                            }
                             return Colors
-                                .grey; // Color cuando el botón está deshabilitado
-                          }
-                          return const Color(
-                              0xFF002856); // Color cuando el botón está habilitado
-                        },
+                                .white; // Color del texto cuando está habilitado
+                          },
+                        ),
                       ),
-                      foregroundColor: MaterialStateProperty.resolveWith<Color>(
-                        (Set<MaterialState> states) {
-                          if (states.contains(MaterialState.disabled)) {
-                            return Colors
-                                .black; // Color del texto cuando está deshabilitado
-                          }
-                          return Colors
-                              .white; // Color del texto cuando está habilitado
-                        },
+                      child: const Text(
+                        'Generar Perfil de Usuario',
+                        style: TextStyle(
+                          fontFamily: 'FFMetaProText2',
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Generar Perfil de Usuario',
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5), // Fondo opaco
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: CircularProgressIndicator(
+                        color: Colors.white, // Color del indicador
+                        strokeWidth: 8, // Grosor del indicador
+                      ),
+                    ),
+                    SizedBox(height: 14),
+                    Text(
+                      'Generando perfil de Usuario...',
                       style: TextStyle(
+                        fontSize: 18,
                         fontFamily: 'FFMetaProText2',
-                        fontSize: 16,
+                        color: Colors.white, // Color del texto
+                        decoration: TextDecoration.none,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
-        if (isLoading)
-          Container(
-            color: Colors.black.withOpacity(0.5), // Fondo opaco
-            child: const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 60,
-                    height: 60,
-                    child: CircularProgressIndicator(
-                      color: Colors.white, // Color del indicador
-                      strokeWidth: 8, // Grosor del indicador
-                    ),
-                  ),
-                  SizedBox(height: 14),
-                  Text(
-                    'Generando perfil de Usuario...',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontFamily: 'FFMetaProText2',
-                      color: Colors.white, // Color del texto
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 

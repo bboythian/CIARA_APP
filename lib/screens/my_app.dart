@@ -130,6 +130,8 @@ class _MyAppState extends State<MyApp> {
           DateTime(date.year, date.month, date.day, 23, 59, 59, 999, 999);
       List<EventUsageInfo> events =
           await UsageStats.queryEvents(startDate, endDate);
+      int totalTimeAfterFiltering =
+          0; // Variable para almacenar el tiempo total después de la filtración
 
       if (events.isEmpty) {
         print(
@@ -167,27 +169,16 @@ class _MyAppState extends State<MyApp> {
             'WARNING: Foreground event without a corresponding background event for $packageName');
       });
 
-      int totalTimeInMilliseconds =
-          usageByApp.values.fold(0, (sum, element) => sum + element);
-      int totalMinutes = (totalTimeInMilliseconds / 60000).floor();
+      // int totalTimeInMilliseconds =
+      //     usageByApp.values.fold(0, (sum, element) => sum + element);
+      // int totalMinutes = (totalTimeInMilliseconds / 60000).floor();
 
-      print("Tiempo total de uso: $totalMinutes minutos");
-
-      // if (totalMinutes >= 60) {
-      //   //Alerta 2 : 4:30
-      //   _showNotification(
-      //       "Haz consumido el teléfono celular por 7 horas, considera descansar");
-      // }
-      // if (totalMinutes >= 90) {
-      //   //Alerta 2 : 4:30
-      //   _showNotification(
-      //       "Haz consumido el teléfono celular por 9 horas, considera descansar");
-      // }
+      // print("Tiempo total de uso: $totalMinutes minutos");
 
       List<String> excludedPackages = [
         'com.oppo.launcher',
         'com.sec.android.app.launcher',
-        'com.example.ciara',
+        // 'com.example.ciara',
         'com.android.settings'
       ];
       List<UsageInfo> usageInfoList = [];
@@ -209,8 +200,16 @@ class _MyAppState extends State<MyApp> {
               totalTimeInForeground: '$hours h $minutes m $seconds s',
             ),
           );
+          // Sumar al tiempo total después de la filtración
+          totalTimeAfterFiltering += totalTimeInMilliseconds;
         }
       }
+      // Convertir el tiempo total a minutos después de la filtración
+      int totalMinutesAfterFiltering =
+          (totalTimeAfterFiltering / 60000).floor();
+
+      print("Tiempo total de uso : $totalMinutesAfterFiltering minutos");
+
       print('********** Aplicaciones uso diario **********');
       for (var usageInfo in usageInfoList) {
         print(usageInfo.packageName);
@@ -373,8 +372,8 @@ class _MyAppState extends State<MyApp> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
+          // padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
               decoration: const BoxDecoration(
@@ -427,7 +426,7 @@ class _MyAppState extends State<MyApp> {
                     ),
                   ),
                   child: const Text(
-                    'Estadísticas de uso',
+                    'Actividad en apps',
                     style: TextStyle(
                       fontFamily: 'FFMetaProText4',
                       fontSize: 16,
@@ -439,23 +438,81 @@ class _MyAppState extends State<MyApp> {
                 _onTabTapped(0);
               },
             ),
+            // const SizedBox(height: 8),
+            // ListTile(
+            //   title: Container(
+            //     padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            //     child: Container(
+            //       margin: const EdgeInsets.symmetric(vertical: 0.0)
+            //           .add(const EdgeInsets.only(left: 2.0, right: 130.0)),
+            //       decoration: const BoxDecoration(
+            //         border: Border(
+            //           bottom: BorderSide(
+            //             color: Color(0xFFA51008),
+            //             width: 3.0,
+            //           ),
+            //         ),
+            //       ),
+            //       child: const Text(
+            //         'Uso Semanal',
+            //         style: TextStyle(
+            //           fontFamily: 'FFMetaProText4',
+            //           fontSize: 16,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            //   // onTap: () {
+            //   //   _onTabTapped(1);
+            //   // },
+            //   enabled: false, // Deshabilitar esta opción
+            // ),
+            // const SizedBox(height: 8),
+            // ListTile(
+            //   title: Container(
+            //     padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            //     child: Container(
+            //       margin: const EdgeInsets.symmetric(vertical: 0.0)
+            //           .add(const EdgeInsets.only(left: 2.0, right: 130.0)),
+            //       decoration: const BoxDecoration(
+            //         border: Border(
+            //           bottom: BorderSide(
+            //             color: Color(0xFFA51008),
+            //             width: 3.0,
+            //           ),
+            //         ),
+            //       ),
+            //       child: const Text(
+            //         'Uso Mensual',
+            //         style: TextStyle(
+            //           fontFamily: 'FFMetaProText4',
+            //           fontSize: 16,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            //   // onTap: () {
+            //   //   _onTabTapped(2);
+            //   // },
+            //   enabled: false,
+            // ),
             const SizedBox(height: 8),
             ListTile(
               title: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 0.0)
-                      .add(const EdgeInsets.only(left: 2.0, right: 120.0)),
+                      .add(const EdgeInsets.only(left: 2.0, right: 150.0)),
                   decoration: const BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: Color.fromRGBO(165, 16, 8, 1.0),
+                        color: Color(0xFFA51008),
                         width: 3.0,
                       ),
                     ),
                   ),
                   child: const Text(
-                    'Notificaciones',
+                    'Privacidad',
                     style: TextStyle(
                       fontFamily: 'FFMetaProText4',
                       fontSize: 16,
@@ -463,9 +520,39 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
               ),
-              onTap: () {
-                _onTabTapped(1);
-              },
+              // onTap: () {
+              //   _onTabTapped(2);
+              // },
+              enabled: false,
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              title: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 0.0)
+                      .add(const EdgeInsets.only(left: 2.0, right: 80.0)),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color(0xFFA51008),
+                        width: 3.0,
+                      ),
+                    ),
+                  ),
+                  child: const Text(
+                    'Soporte y contacto',
+                    style: TextStyle(
+                      fontFamily: 'FFMetaProText4',
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              // onTap: () {
+              //   _onTabTapped(2);
+              // },
+              enabled: false,
             ),
             const SizedBox(height: 8),
             ListTile(
@@ -483,7 +570,7 @@ class _MyAppState extends State<MyApp> {
                     ),
                   ),
                   child: const Text(
-                    'Ajustes',
+                    'Ayuda',
                     style: TextStyle(
                       fontFamily: 'FFMetaProText4',
                       fontSize: 16,
@@ -491,20 +578,21 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
               ),
-              onTap: () {
-                _onTabTapped(2);
-              },
+              // onTap: () {
+              //   _onTabTapped(2);
+              // },
+              enabled: false,
             ),
-            const SizedBox(height: 320),
+            Spacer(), // Añadir un Spacer para empujar el contenido hacia arriba
             Container(
-              alignment: Alignment.bottomCenter,
+              alignment: Alignment.center,
               padding: const EdgeInsets.only(bottom: 8),
               child: const Text(
                 'UCUENCA',
                 style: TextStyle(
                   fontFamily: 'FFMetaProTitle',
                   color: Color(0xFF6F6F6F),
-                  fontSize: 30,
+                  fontSize: 25,
                 ),
               ),
             ),
