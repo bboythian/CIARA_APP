@@ -36,14 +36,34 @@ class UsageService {
     Map<String, int> usageByApp = {};
     Map<String, int> foregroundTimes = {};
 
+    // for (var event in events) {
+    //   DateTime eventTime =
+    //       DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
+    //   String packageName = event.packageName ?? 'Unknown';
+
+    //   if (event.eventType == "1") {
+    //     foregroundTimes[packageName] = eventTime.millisecondsSinceEpoch;
+    //   } else if (event.eventType == "2") {
+    //     if (foregroundTimes.containsKey(packageName)) {
+    //       int foregroundTime =
+    //           eventTime.millisecondsSinceEpoch - foregroundTimes[packageName]!;
+    //       usageByApp[packageName] =
+    //           (usageByApp[packageName] ?? 0) + foregroundTime;
+    //       foregroundTimes.remove(packageName);
+    //     }
+    //   }
+    // }
     for (var event in events) {
       DateTime eventTime =
           DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
       String packageName = event.packageName ?? 'Unknown';
 
+      // Evento tipo "1" -> Aplicación en primer plano
       if (event.eventType == "1") {
         foregroundTimes[packageName] = eventTime.millisecondsSinceEpoch;
-      } else if (event.eventType == "2") {
+      }
+      // Evento tipo "2" -> Aplicación cerrada o cambiada a segundo plano
+      else if (event.eventType == "2") {
         if (foregroundTimes.containsKey(packageName)) {
           int foregroundTime =
               eventTime.millisecondsSinceEpoch - foregroundTimes[packageName]!;
@@ -52,6 +72,12 @@ class UsageService {
           foregroundTimes.remove(packageName);
         }
       }
+    }
+    // Manejar los eventos de tipo "1" sin un evento de tipo "2"
+    for (var app in foregroundTimes.keys) {
+      // Si la aplicación sigue en primer plano, calcular el tiempo hasta el momento actual
+      int foregroundTime = now.millisecondsSinceEpoch - foregroundTimes[app]!;
+      usageByApp[app] = (usageByApp[app] ?? 0) + foregroundTime;
     }
     List<String> excludedPackages = [
       'com.oppo.launcher',
@@ -81,11 +107,8 @@ class UsageService {
         totalTimeAfterFiltering += totalTimeInMilliseconds;
       }
     }
-    // Convertir el tiempo total a minutos después de la filtración
-    int totalMinutesAfterFiltering = (totalTimeAfterFiltering / 60000).floor();
-
-    print(
-        "USAGE_SERVICE: Tiempo total de uso : $totalMinutesAfterFiltering minutos");
+    // // Convertir el tiempo total a minutos después de la filtración
+    // int totalMinutesAfterFiltering = (totalTimeAfterFiltering / 60000).floor();
 
     return totalTimeAfterFiltering; // Tiempo total de uso en milisegundos
   }

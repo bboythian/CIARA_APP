@@ -19,8 +19,10 @@ import 'package:flutter/material.dart';
 const String dailyAlarmTask = "dailyAlarmTask";
 
 void callbackDispatcher() {
+  print("callbackDispatcher ejecutado");
   Workmanager().executeTask((task, inputData) async {
     await BackgroundService.scheduleDailyAlarms();
+    print("Tarea ejecutada: $task");
     return Future.value(true);
   });
 }
@@ -52,43 +54,30 @@ class BackgroundService {
       final location = tz.getLocation('America/Guayaquil');
       final now = tz.TZDateTime.now(location);
       final dailyReportTime =
-          tz.TZDateTime(location, now.year, now.month, now.day, 23, 50);
+          tz.TZDateTime(location, now.year, now.month, now.day, 20, 40);
       final nextDailyReportTime = dailyReportTime.isBefore(now)
           ? dailyReportTime.add(Duration(days: 1))
           : dailyReportTime;
 
-      print('Programando alarma diaria para: $nextDailyReportTime');
+      // print('Programando alarma diaria para: $nextDailyReportTime');
 
-      // bool result = await AndroidAlarmManager.oneShotAt(
-      //   nextDailyReportTime,
-      //   0,
-      //   callback,
-      //   exact: true,
-      //   wakeup: true,
-      //   allowWhileIdle: true,
-      // );
-
-      // if (result) {
-      //   print('Alarma programada correctamente para: $nextDailyReportTime');
-      // } else {
-      //   print('Error al programar la alarma para: $nextDailyReportTime');
-      // }
       // Registrar la tarea periódica con WorkManager
       await Workmanager().registerOneOffTask(
-        "dailyAlarmTask", // ID de la tarea
-        dailyAlarmTask, // Nombre de la tarea
+        "dailyAlarmTask",
+        dailyAlarmTask,
         inputData: {
           "email": email,
           "nextAlarmTime": nextDailyReportTime.toIso8601String(),
         },
         initialDelay: nextDailyReportTime.difference(DateTime.now()),
-        constraints: workManager.Constraints(
+        constraints: Constraints(
           networkType:
-              workManager.NetworkType.connected, // Use workManager alias here
+              workManager.NetworkType.connected, // Requiere conexión a internet
         ),
       );
 
-      print('Tarea diaria programada correctamente para: $nextDailyReportTime');
+      print(
+          '** TASK ** Tarea diaria programada correctamente para: $nextDailyReportTime');
     } catch (e) {
       print('Error al programar la alarma diaria: $e');
     }
@@ -96,7 +85,6 @@ class BackgroundService {
 
   static Future<void> callback() async {
     await initialize();
-    // await UsageService.getEmail();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email') ?? '**';
 
@@ -147,7 +135,7 @@ class BackgroundService {
       await saveDataLocally(formattedDate, mostHour, dataToSend);
       await _scheduleRetryAlarm(); // Programar reintento si falla
       // Programar la siguiente alarma diaria
-      // await scheduleNextDailyAlarm();
+      await scheduleNextDailyAlarm();
       return;
     }
 
@@ -183,23 +171,22 @@ class BackgroundService {
     // Reintento a las 10 AM
     final location = tz.getLocation('America/Guayaquil');
     final now = tz.TZDateTime.now(location);
-    // final retryTime =
-    //     tz.TZDateTime(location, now.year, now.month, now.day, 10, 0)
-    //         .add(Duration(days: 1));
-    // Programar el reintento para las 10:00 AM del día siguiente si no hay conexión
     final retryTime =
-        tz.TZDateTime(location, now.year, now.month, now.day, 11, 0)
-            .add(Duration(days: now.hour >= 10 ? 1 : 0));
+        tz.TZDateTime(location, now.year, now.month, now.day, 10, 0)
+            .add(Duration(days: 1));
+    // Programar el reintento para las 10:00 AM del día siguiente si no hay conexión
+    // final retryTime =
+    //     tz.TZDateTime(location, now.year, now.month, now.day, 11, 0)
+    //         .add(Duration(days: now.hour >= 10 ? 1 : 0));
 
     try {
       await Workmanager().registerOneOffTask(
-        "retryAlarmTask", // ID de la tarea
+        "retryAlarmTask",
         dailyAlarmTask,
         initialDelay: retryTime.difference(DateTime.now()),
         constraints: Constraints(
-          networkType: workManager.NetworkType.connected,
-          requiresDeviceIdle: false, // Solo si el dispositivo está activo
-          requiresCharging: false,
+          networkType:
+              workManager.NetworkType.connected, // Requiere conexión a internet
         ),
       );
       print('Reintento programado para: $retryTime');
@@ -385,7 +372,7 @@ class BackgroundService {
   }
 
   static Future<void> initializeWorkManager() async {
-    Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+    Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
   }
 
   static Future<void> registerDailyTask() async {
@@ -400,6 +387,11 @@ class BackgroundService {
   }
 
 // ALERTAS DIARIAS
+
+  static const int alert1 = 320;
+  static const int alert2 = 340;
+  static const int alert3 = 360;
+
   static Future<void> checkUsage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -412,7 +404,6 @@ class BackgroundService {
 
     // Obtener el tiempo total de uso de las apps
     int totalUsageTime = await UsageService.getTotalUsageToday() ~/ (60 * 1000);
-    // print("**checkUsage**: Tiempo de uso por aplicación: $totalUsageTime");
 
     // Verificar si ya se han enviado las notificaciones hoy
     bool hasNotified4Hours = prefs.getBool('hasNotified4Hours') ?? false;
@@ -420,7 +411,7 @@ class BackgroundService {
     bool hasNotified8Hours = prefs.getBool('hasNotified8Hours') ?? false;
 
     // Revisar si ha alcanzado las 4 horas y aún no se ha enviado la notificación
-    if (totalUsageTime >= 240 && !hasNotified4Hours) {
+    if (totalUsageTime >= alert1 && !hasNotified4Hours) {
       //4 horas =240
       //minutos
       await sendNotificationWithServerData(
@@ -428,24 +419,27 @@ class BackgroundService {
           email,
           totalUsageTime);
       prefs.setBool('hasNotified4Hours', true);
+      print("**ALERT**: Alerta 4 Horas solicitada");
     }
 
     // Revisar si ha alcanzado las 6 horas y aún no se ha enviado la notificación
-    if (totalUsageTime >= 360 && !hasNotified6Hours) {
+    if (totalUsageTime >= alert2 && !hasNotified6Hours) {
       //6 horas = 360
       await sendNotificationWithServerData(
           " ¡Prueba esta alternativa!", email, totalUsageTime);
       prefs.setBool('hasNotified6Hours', true);
+      print("**ALERT**: Alerta 6 Horas solicitada");
     }
 
     // Revisar si ha alcanzado las 8 horas y aún no se ha enviado la notificación
-    if (totalUsageTime >= 480 && !hasNotified8Hours) {
+    if (totalUsageTime >= alert3 && !hasNotified8Hours) {
       //9 horas = 480
       await sendNotificationWithServerData(
           "Es importante desconectarse un poco. Aquí tienes una idea para recargar energías:",
           email,
           totalUsageTime);
       prefs.setBool('hasNotified8Hours', true);
+      print("**ALERT**: Alerta 8 Horas solicitada");
     }
 
     // Reiniciar el estado cada día
@@ -484,17 +478,17 @@ class BackgroundService {
       if (response.statusCode == 200) {
         // Obtener el texto devuelto por el servidor
         String serverMessage = response.body;
-        // String motivationalMessage =
-        //     _getMotivationalMessage(totalUsageTimeInMinutes, serverMessage);
-        // int progress = _getProgress(totalUsageTimeInMinutes);
-        // Color progressColor = _getProgressColor(totalUsageTimeInMinutes);
 
-        // // Título dinámico basado en el uso
+        // Obtener el progreso y el color basado en el tiempo de uso
+        int progress = _getProgress(totalUsageTimeInMinutes);
+        Color progressColor = _getProgressColor(totalUsageTimeInMinutes);
+
+        // Título dinámico basado en el uso
         String dynamicTitle =
             _getDynamicTitle(totalUsageTimeInMinutes, message);
 
         // Mostrar notificación con el mensaje del servidor
-        const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails androidPlatformChannelSpecifics =
             AndroidNotificationDetails(
           'your_channel_id',
           'Uso del Teléfono',
@@ -502,15 +496,18 @@ class BackgroundService {
           importance: Importance.max,
           priority: Priority.high,
           ticker: 'ticker',
-          styleInformation: BigTextStyleInformation(''),
+          styleInformation: BigTextStyleInformation(serverMessage),
           enableLights: true,
-          ledColor: Color(0xff00ff00),
+          ledColor: progressColor, // Cambiar el color del LED según el tiempo
           ledOnMs: 1000,
           ledOffMs: 500,
-          // color: Colors.red,
+          showProgress: true,
+          maxProgress: 100, // El progreso máximo será 100%
+          progress: progress, // El progreso actual
+          color: progressColor, // Cambiar el color de la notificación
         );
 
-        const NotificationDetails platformChannelSpecifics =
+        NotificationDetails platformChannelSpecifics =
             NotificationDetails(android: androidPlatformChannelSpecifics);
 
         await flutterLocalNotificationsPlugin!.show(
@@ -532,66 +529,28 @@ class BackgroundService {
 
   // Función para generar el título dinámico
   static String _getDynamicTitle(int totalUsageTimeInMinutes, String message) {
-    if (totalUsageTimeInMinutes <= 240) {
+    if (totalUsageTimeInMinutes < alert2) {
       return "¡Llevas 4 horas con tu teléfono!";
-    } else if (totalUsageTimeInMinutes <= 360) {
+    } else if (totalUsageTimeInMinutes < alert3) {
       return "Has alcanzado 6 horas de uso.";
     } else {
-      return "¡8 horas ya!";
-    }
-  }
-
-  static String _getMotivationalMessage(
-      int totalUsageTimeInMinutes, String serverMessage) {
-    if (totalUsageTimeInMinutes <= 120) {
-      return " Aún estás en un nivel bajo. $serverMessage";
-    } else if (totalUsageTimeInMinutes <= 130) {
-      return "¡Prueba esta alternativa! $serverMessage";
-    } else {
-      return "Considera: $serverMessage";
+      return "Has alcanzado el límite diario con 8 horas de uso.";
     }
   }
 
   static int _getProgress(int totalUsageTimeInMinutes) {
-    const int maxUsageMinutes = 480;
+    const int maxUsageMinutes = alert3;
     return (totalUsageTimeInMinutes / maxUsageMinutes * 100).toInt();
   }
 
   static Color _getProgressColor(int totalUsageTimeInMinutes) {
-    if (totalUsageTimeInMinutes <= 120) {
+    if (totalUsageTimeInMinutes < alert2) {
       return Colors.green;
-    } else if (totalUsageTimeInMinutes <= 130) {
+    } else if (totalUsageTimeInMinutes < alert3) {
       return Colors.yellow;
     } else {
       return Colors.red;
     }
-  }
-
-  static Future<void> sendNotification(String message) async {
-    if (flutterLocalNotificationsPlugin == null) {
-      await initialize();
-    }
-
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your_channel_id',
-      'Uso del Teléfono',
-      'Notificaciones por tiempo de uso del dispositivo',
-      importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker',
-    );
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin!.show(
-      0,
-      'Tiempo de Uso de Pantalla',
-      message,
-      platformChannelSpecifics,
-      payload: 'item x',
-    );
   }
 
   static Future<void> registerUsageMonitoringTask() async {

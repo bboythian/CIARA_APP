@@ -3,8 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/user_preferences_screen.dart';
 import 'screens/my_app.dart';
-// import 'package:timezone/data/latest.dart' as tz;
-// import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:isolate';
 import 'dart:ui';
@@ -135,9 +133,6 @@ Future<Map<String, dynamic>> initializeApp() async {
   String? storedEmail = prefs.getString('email');
   bool? hasCompletedPreferences = prefs.getBool('hasCompletedPreferences');
 
-  // Inicializar zonas horarias
-  // tz.initializeTimeZones();
-
   // Inicializar servicios no críticos
   await initializeNonCriticalServices();
 
@@ -151,13 +146,6 @@ Future<Map<String, dynamic>> initializeApp() async {
 Future<void> initializeNonCriticalServices() async {
   try {
     await BackgroundService.registerUsageMonitoringTask();
-    // await AndroidAlarmManager.periodic(
-    //   const Duration(minutes: 15),
-    //   0,
-    //   BackgroundService.checkUsage,
-    //   exact: true,
-    //   wakeup: true,
-    // );
   } catch (e) {
     print("Error al inicializar servicios no críticos: $e");
   }
