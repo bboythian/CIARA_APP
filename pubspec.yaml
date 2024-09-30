@@ -32,8 +32,8 @@ dependencies:
   permission_handler: ^11.3.1
   app_usage: ^3.0.1
   flutter_app_icons: ^0.0.9 
-  timezone: ^0.8.0 
-  flutter_local_notifications: ^8.0.0
+  timezone: ^0.9.4
+  flutter_local_notifications: ^17.2.3
   flutter_launcher_icons: ^0.13.1
   fl_chart: ^0.66.1
   charts_flutter: ^0.12.0

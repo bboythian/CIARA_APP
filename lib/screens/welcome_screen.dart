@@ -383,7 +383,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                 ),
                 Text(
-                  'Tomamos medidas de seguridad para proteger tu información personal contra el acceso no autorizado, alteración, divulgación o destrucción. Únicamente los miembros del equipo tienen acceso a la informaciòn',
+                  'Tomamos medidas de seguridad para proteger tu información personal contra el acceso no autorizado, alteración, divulgación o destrucción. Únicamente los miembros del equipo tienen acceso a la información.',
                   style: TextStyle(
                     fontFamily: 'FFMetaProText3',
                     color: Color(0xFF002856),

@@ -10,9 +10,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
-
-    
     <application
         android:label="CIARA"
         android:name="${applicationName}"
@@ -44,7 +43,11 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
         </receiver>
-
+        <service
+            android:name=".services.BackgroundService"
+            android:foregroundServiceType="dataSync"
+            android:permission="android.permission.FOREGROUND_SERVICE"
+            android:exported="true"/>
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

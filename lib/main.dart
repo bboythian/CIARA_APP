@@ -7,12 +7,18 @@ import 'package:workmanager/workmanager.dart';
 import 'dart:isolate';
 import 'dart:ui';
 import 'services/background_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 const String isolateName = 'isolate';
 
 void main() async {
   // Asegurarse de que Flutter esté inicializado antes de cualquier otra operación
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Solicitar permiso para ignorar optimización de batería
+  if (await Permission.ignoreBatteryOptimizations.isDenied) {
+    await openAppSettings(); // Abre la configuración de la app para que el usuario permita ignorar optimizaciones
+  }
 
   // Inicializar el WorkManager y el Android Alarm Manager
   await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
@@ -25,6 +31,10 @@ void main() async {
     frequency: Duration(minutes: 15), // Intervalo de 15 minutos
     initialDelay: Duration(minutes: 1), // Delay inicial antes de comenzar
     existingWorkPolicy: ExistingWorkPolicy.keep, // Evita sobrescribir tareas
+    constraints: Constraints(
+      networkType:
+          NetworkType.not_required, // Permite ejecutar incluso sin internet
+    ),
   );
 
   // Mostrar la pantalla de carga inmediatamente

@@ -87,27 +87,6 @@ class _MyAppState extends State<MyApp> {
     print('Fecha actual: $formattedDate');
     print('Mayor consumo en la hora: $mostHour');
     print('Datos de uso: $dataToSend');
-
-    // try {
-    //   var url = Uri.parse('https://ingsoftware.ucuenca.edu.ec/enviar-datos');
-    //   // var url = Uri.parse('http://10.24.161.24:8081/enviar-datos');
-    //   var response = await http.post(
-    //     url,
-    //     body: {
-    //       'email': widget.email,
-    //       'fecha': formattedDate,
-    //       'mayorConsumo': mostHour,
-    //       'usageData': jsonEncode(dataToSend),
-    //     },
-    //   );
-
-    //   print('Response status: ${response.statusCode}');
-    //   print('Response body: ${response.body}');
-    // } catch (error) {
-    //   print('Error al enviar los datos: $error');
-    // }
-
-    // _showNotification("CIARA: Reporte diario enviado exitosamente!");
   }
 
   Future<void> requestPermissions() async {
@@ -179,7 +158,10 @@ class _MyAppState extends State<MyApp> {
         'com.oppo.launcher',
         'com.sec.android.app.launcher',
         // 'com.example.ciara',
-        'com.android.settings'
+        // 'com.android.settings',
+        'com.transsion.XOSLauncher', //infinix
+        'com.miui.home', //readmi
+        'com.mi.android.globallauncher' // POCO
       ];
       List<UsageInfo> usageInfoList = [];
 
@@ -224,9 +206,7 @@ class _MyAppState extends State<MyApp> {
 
   void _showNotification(String message) {
     var androidDetails = const AndroidNotificationDetails(
-        "channelId",
-        "Local Notification",
-        "This is the description of the Notification, you can write anything",
+        "channelId", "Local Notification",
         importance: Importance.high);
     var generalNotificationDetails =
         NotificationDetails(android: androidDetails);

@@ -17,7 +17,7 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
   final Map<String, List<bool>> _selectedOptions = {
     'mascota': List.generate(2, (_) => false),
     'responsabilidadesEnCasa': List.generate(4, (_) => false),
-    'tareasUniversitarias': List.generate(4, (_) => false),
+    'horarioClases': List.generate(3, (_) => false),
     'espacioOrdenado': List.generate(4, (_) => false),
     'actividadesAireLibre': List.generate(15, (_) => false),
     'actividadesEnCasa': List.generate(15, (_) => false),
@@ -94,7 +94,7 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
           'periodo': formattedDate,
           'mascota': _preferences['mascota'],
           'responsabilidadesEnCasa': _preferences['responsabilidadesEnCasa'],
-          'tareasUniversitarias': _preferences['tareasUniversitarias'],
+          'horarioClases': _preferences['horarioClases'],
           'espacioOrdenado': _preferences['espacioOrdenado'],
           'actividadesAireLibre': _preferences['actividadesAireLibre'],
           'actividadesEnCasa': _preferences['actividadesEnCasa'],
@@ -164,9 +164,8 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-
                     const SizedBox(height: 10),
-                    const Text('1. ¿Tienes mascotas?'),
+                    const Text('1. ¿Tienes mascotas que vivan con usted?'),
                     _buildToggleButtons('mascota', ['Si', 'No']),
                     const SizedBox(height: 20),
                     const Text(
@@ -178,13 +177,10 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                       'No tengo responsabilidades'
                     ]),
                     const SizedBox(height: 10),
-                    const Text('3. ¿Cómo realizas tus tareas universitarias?'),
-                    _buildToggleButtons('tareasUniversitarias', [
-                      'Con anticipación',
-                      'Dentro del plazo',
-                      'En el último momento',
-                      'A veces me olvido'
-                    ]),
+                    const Text(
+                        '3. Seleccione su jornada de clases más habitual.'),
+                    _buildToggleButtons('horarioClases',
+                        ['Matutino', 'Vespertino', 'Nocturno']),
                     const SizedBox(height: 10),
                     const Text(
                         '4. ¿Cómo describirías el estado de tu espacio personal en general?'),
@@ -196,7 +192,7 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                     ]),
                     const SizedBox(height: 10),
                     const Text(
-                        '5. Selecciona 3 actividades FUERA DE CASA que más disfrutas.'),
+                        '5. Selecciona 3 actividades FUERA DE CASA que más disfrute.'),
                     _buildMultipleChoiceToggleButtons('actividadesAireLibre', [
                       'Practicar algún deporte o actividad física',
                       'Salir a caminar',
@@ -216,7 +212,7 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                     ]),
                     const SizedBox(height: 10),
                     const Text(
-                        '6. Selecciona 3 actividades EN CASA que más disfrutes SIN USAR TECNOLOGÍA'),
+                        '6. Selecciona 3 actividades EN CASA que más disfrute SIN USAR TECNOLOGÍA'),
                     _buildMultipleChoiceToggleButtons('actividadesEnCasa', [
                       'Leer',
                       'Tocar algún instrumento',
@@ -234,18 +230,15 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                       'Jardinería',
                       'Pasar tiempo con tu mascota',
                     ]),
-
                     const SizedBox(height: 10),
                     const Text('7. ¿Cuál es tu expectativa al usar CIARA?'),
                     _buildToggleButtons('motivacion', [
                       'Mejorar mi bienestar físico y mental',
                       'Aumentar mi productividad en estudios',
                       'Fortalecer mis relaciones personales',
-                      'Encontrar nuevas formas de ocio y entretenimiento'
+                      'Encontrar nuevas formas de entretenimiento'
                     ]),
-                    //here
                     const SizedBox(height: 20),
-
                     ElevatedButton(
                       onPressed: _isFormComplete
                           ? () async {

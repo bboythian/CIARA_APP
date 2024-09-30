@@ -6,14 +6,13 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-// import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:workmanager/workmanager.dart' as workManager;
-// import 'package:usage_stats/usage_stats.dart' as usageStats;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
 // Este es el nombre de la tarea de WorkManager
 const String dailyAlarmTask = "dailyAlarmTask";
@@ -54,7 +53,7 @@ class BackgroundService {
       final location = tz.getLocation('America/Guayaquil');
       final now = tz.TZDateTime.now(location);
       final dailyReportTime =
-          tz.TZDateTime(location, now.year, now.month, now.day, 20, 40);
+          tz.TZDateTime(location, now.year, now.month, now.day, 23, 50); //HORAF
       final nextDailyReportTime = dailyReportTime.isBefore(now)
           ? dailyReportTime.add(Duration(days: 1))
           : dailyReportTime;
@@ -149,7 +148,7 @@ class BackgroundService {
 
     // Configurar la próxima alarma para el día siguiente a las 23:50
     final nextReportTime =
-        tz.TZDateTime(location, now.year, now.month, now.day, 23, 50)
+        tz.TZDateTime(location, now.year, now.month, now.day, 23, 30) //HORAF
             .add(Duration(days: 1));
 
     try {
@@ -172,7 +171,7 @@ class BackgroundService {
     final location = tz.getLocation('America/Guayaquil');
     final now = tz.TZDateTime.now(location);
     final retryTime =
-        tz.TZDateTime(location, now.year, now.month, now.day, 10, 0)
+        tz.TZDateTime(location, now.year, now.month, now.day, 10, 30) //HORAF
             .add(Duration(days: 1));
     // Programar el reintento para las 10:00 AM del día siguiente si no hay conexión
     // final retryTime =
@@ -261,22 +260,47 @@ class BackgroundService {
     }).toList());
   }
 
+  // static Future<void> _showNotification(String message) async {
+  //   if (flutterLocalNotificationsPlugin == null) {
+  //     await initialize();
+  //   }
+  //   await flutterLocalNotificationsPlugin!.show(
+  //     0,
+  //     "CIARA",
+  //     message,
+  //     const NotificationDetails(
+  //       android: AndroidNotificationDetails(
+  //         "channelId",
+  //         "Local Notification",
+  //         "Descripción de la notificación",
+  //         importance: Importance.high,
+  //       ),
+  //     ),
+  //   );
+  // }
   static Future<void> _showNotification(String message) async {
     if (flutterLocalNotificationsPlugin == null) {
       await initialize();
     }
+
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id',
+      'Local Notification',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      // Elimina la referencia a PendingIntent
+    );
+
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
     await flutterLocalNotificationsPlugin!.show(
       0,
       "CIARA",
       message,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          "channelId",
-          "Local Notification",
-          "Descripción de la notificación",
-          importance: Importance.high,
-        ),
-      ),
+      platformChannelSpecifics,
     );
   }
 
@@ -324,7 +348,10 @@ class BackgroundService {
         'com.oppo.launcher',
         'com.sec.android.app.launcher',
         // 'com.example.ciara',
-        'com.android.settings'
+        // 'com.android.settings',
+        'com.transsion.XOSLauncher', //infinix
+        'com.miui.home', //readmi
+        'com.mi.android.globallauncher' // POCO
       ];
 
       for (var app in usageByApp.keys) {
@@ -388,9 +415,9 @@ class BackgroundService {
 
 // ALERTAS DIARIAS
 
-  static const int alert1 = 320;
-  static const int alert2 = 340;
-  static const int alert3 = 360;
+  static const int alert1 = 240;
+  static const int alert2 = 360;
+  static const int alert3 = 480;
 
   static Future<void> checkUsage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -492,7 +519,6 @@ class BackgroundService {
             AndroidNotificationDetails(
           'your_channel_id',
           'Uso del Teléfono',
-          'Notificaciones por tiempo de uso del dispositivo',
           importance: Importance.max,
           priority: Priority.high,
           ticker: 'ticker',
@@ -559,7 +585,11 @@ class BackgroundService {
       "checkDailyUsage",
       frequency: Duration(minutes: 15),
       initialDelay: Duration(minutes: 1),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+      // existingWorkPolicy: ExistingWorkPolicy.keep,
+      constraints: Constraints(
+        networkType: workManager
+            .NetworkType.not_required, // Allow task to run even without network
+      ),
     );
   }
 }
