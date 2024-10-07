@@ -7,6 +7,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:workmanager/workmanager.dart' as workManager;
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:workmanager/workmanager.dart';
@@ -14,15 +15,24 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 
+import 'package:ciara/services/usage_monitoring_service.dart';
+
 // Este es el nombre de la tarea de WorkManager
 const String dailyAlarmTask = "dailyAlarmTask";
 
+// void callbackDispatcher() {
+//   print("callbackDispatcher ejecutado");
+//   Workmanager().executeTask((task, inputData) async {
+//     await BackgroundService.scheduleDailyAlarms();
+//     print("Tarea ejecutada: $task");
+//     return Future.value(true);
+//   });
+// }
 void callbackDispatcher() {
-  print("callbackDispatcher ejecutado");
   Workmanager().executeTask((task, inputData) async {
-    await BackgroundService.scheduleDailyAlarms();
-    print("Tarea ejecutada: $task");
-    return Future.value(true);
+    // Aquí llamamos a la función checkUsage del servicio en primer plano
+    await UsageMonitoringService.checkUsage();
+    return Future.value(true); // Indicar que la tarea se completó
   });
 }
 
@@ -47,36 +57,34 @@ class BackgroundService {
   static Future<void> scheduleDailyAlarms() async {
     try {
       await initialize();
+      // await startForegroundService(); // Iniciar el servicio en primer plano
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       email = prefs.getString('email') ?? '**';
 
       final location = tz.getLocation('America/Guayaquil');
       final now = tz.TZDateTime.now(location);
-      final dailyReportTime =
-          tz.TZDateTime(location, now.year, now.month, now.day, 23, 50); //HORAF
-      final nextDailyReportTime = dailyReportTime.isBefore(now)
-          ? dailyReportTime.add(Duration(days: 1))
-          : dailyReportTime;
 
-      // print('Programando alarma diaria para: $nextDailyReportTime');
+      // Programar la alarma diaria a la hora deseada (e.g., 23:50)
+      var dailyReportTime =
+          tz.TZDateTime(location, now.year, now.month, now.day, 10, 25);
+      if (dailyReportTime.isBefore(now)) {
+        dailyReportTime = dailyReportTime.add(Duration(
+            days:
+                1)); // Asegurar que se programe para el día siguiente si ya ha pasado
+      }
 
-      // Registrar la tarea periódica con WorkManager
-      await Workmanager().registerOneOffTask(
-        "dailyAlarmTask",
-        dailyAlarmTask,
-        inputData: {
-          "email": email,
-          "nextAlarmTime": nextDailyReportTime.toIso8601String(),
-        },
-        initialDelay: nextDailyReportTime.difference(DateTime.now()),
-        constraints: Constraints(
-          networkType:
-              workManager.NetworkType.connected, // Requiere conexión a internet
-        ),
+      await AndroidAlarmManager.oneShotAt(
+        dailyReportTime, // La hora exacta
+        0, // ID único para la alarma
+        callback, // Función a ejecutar
+        exact: true,
+        wakeup: true,
+        allowWhileIdle: true,
       );
-
+      print('*HORA ACTUAL* $now');
       print(
-          '** TASK ** Tarea diaria programada correctamente para: $nextDailyReportTime');
+          '** TASK ** Tarea diaria programada correctamente para: $dailyReportTime');
     } catch (e) {
       print('Error al programar la alarma diaria: $e');
     }
@@ -84,6 +92,7 @@ class BackgroundService {
 
   static Future<void> callback() async {
     await initialize();
+    print('Ejecutando callback a la hora programada');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email') ?? '**';
 
@@ -122,13 +131,30 @@ class BackgroundService {
         },
       );
 
-      if (response.statusCode == 200) {
-        _showNotification("Reporte diario enviado exitosamente!");
-        print('Reporte enviado exitosamente.');
-        await _clearFailedData(); // Limpiar datos si se envían correctamente
-      } else {
-        throw Exception('Error al enviar el reporte.');
-      }
+      // if (response.statusCode == 200) {
+      //   _showNotification("Reporte diario enviado exitosamente!");
+      //   print('Reporte enviado exitosamente.');
+      //   await _clearFailedData(); // Limpiar datos si se envían correctamente
+      // } else {
+      //   throw Exception('Error al enviar el reporte.');
+      // }
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      flutterLocalNotificationsPlugin!.show(
+        0,
+        "CIARA",
+        "Reporte diario enviado exitosamente!",
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            "channelId",
+            "Local Notification",
+            importance: Importance.high,
+          ),
+        ),
+      );
+      // Programar la alarma para el siguiente día a la misma hora
+      // Programar la alarma para el día siguiente a la hora especificada
+      await scheduleNextDailyAlarm(); // Ajusta la hora y minuto según lo que necesites
     } catch (error) {
       print('Error al enviar el reporte: $error');
       await saveDataLocally(formattedDate, mostHour, dataToSend);
@@ -137,9 +163,6 @@ class BackgroundService {
       await scheduleNextDailyAlarm();
       return;
     }
-
-    // Programar la siguiente alarma diaria
-    await scheduleNextDailyAlarm();
   }
 
   static Future<void> scheduleNextDailyAlarm() async {
@@ -148,17 +171,17 @@ class BackgroundService {
 
     // Configurar la próxima alarma para el día siguiente a las 23:50
     final nextReportTime =
-        tz.TZDateTime(location, now.year, now.month, now.day, 23, 30) //HORAF
+        tz.TZDateTime(location, now.year, now.month, now.day, 23, 50) //HORAF
             .add(Duration(days: 1));
 
     try {
-      await Workmanager().registerOneOffTask(
-        "nextDailyAlarmTask", // ID de la tarea
-        dailyAlarmTask,
-        initialDelay: nextReportTime.difference(DateTime.now()),
-        constraints: Constraints(
-          networkType: workManager.NetworkType.connected,
-        ),
+      await AndroidAlarmManager.oneShotAt(
+        nextReportTime,
+        1,
+        callback,
+        exact: true,
+        wakeup: true,
+        allowWhileIdle: true,
       );
       print('Próxima alarma programada para: $nextReportTime');
     } catch (error) {
@@ -179,15 +202,22 @@ class BackgroundService {
     //         .add(Duration(days: now.hour >= 10 ? 1 : 0));
 
     try {
-      await Workmanager().registerOneOffTask(
-        "retryAlarmTask",
-        dailyAlarmTask,
-        initialDelay: retryTime.difference(DateTime.now()),
-        constraints: Constraints(
-          networkType:
-              workManager.NetworkType.connected, // Requiere conexión a internet
-        ),
+      await AndroidAlarmManager.oneShotAt(
+        retryTime,
+        1,
+        callback,
+        exact: true,
+        wakeup: true,
       );
+      // await Workmanager().registerOneOffTask(
+      //   "retryAlarmTask",
+      //   dailyAlarmTask,
+      //   initialDelay: retryTime.difference(DateTime.now()),
+      //   constraints: Constraints(
+      //     networkType:
+      //         workManager.NetworkType.connected, // Requiere conexión a internet
+      //   ),
+      // );
       print('Reintento programado para: $retryTime');
     } catch (e) {
       print('Error al programar el reintento: $e');
@@ -415,9 +445,9 @@ class BackgroundService {
 
 // ALERTAS DIARIAS
 
-  static const int alert1 = 240;
-  static const int alert2 = 360;
-  static const int alert3 = 480;
+  static const int alert1 = 80;
+  static const int alert2 = 100;
+  static const int alert3 = 120;
 
   static Future<void> checkUsage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -580,15 +610,25 @@ class BackgroundService {
   }
 
   static Future<void> registerUsageMonitoringTask() async {
+    // Workmanager().registerPeriodicTask(
+    //   "checkUsageTask",
+    //   "checkDailyUsage",
+    //   frequency: Duration(minutes: 15),
+    //   initialDelay: Duration(minutes: 1),
+    //   // existingWorkPolicy: ExistingWorkPolicy.keep,
+    //   constraints: Constraints(
+    //     networkType: workManager.NetworkType.not_required,
+    //   ),
+    // );
     Workmanager().registerPeriodicTask(
       "checkUsageTask",
       "checkDailyUsage",
       frequency: Duration(minutes: 15),
-      initialDelay: Duration(minutes: 1),
-      // existingWorkPolicy: ExistingWorkPolicy.keep,
       constraints: Constraints(
-        networkType: workManager
-            .NetworkType.not_required, // Allow task to run even without network
+        networkType:
+            workManager.NetworkType.not_required, // No requiere internet
+        requiresBatteryNotLow: false, // Ejecutar incluso con batería baja
+        requiresCharging: false, // No requiere estar cargando
       ),
     );
   }

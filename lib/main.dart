@@ -4,9 +4,11 @@ import 'screens/welcome_screen.dart';
 import 'screens/user_preferences_screen.dart';
 import 'screens/my_app.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'dart:isolate';
 import 'dart:ui';
 import 'services/background_service.dart';
+import 'services/usage_monitoring_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 const String isolateName = 'isolate';
@@ -15,14 +17,29 @@ void main() async {
   // Asegurarse de que Flutter esté inicializado antes de cualquier otra operación
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Solicitar permiso para ignorar optimización de batería
+  // Solicitar permiso para ignorar la optimización de batería
+  // if (await Permission.ignoreBatteryOptimizations.isDenied) {
+  //   await openAppSettings(); // Abre la configuración de la app para que el usuario permita ignorar optimizaciones
+  // }
+
+  // if (await Permission.scheduleExactAlarm.isDenied) {
+  //   await openAppSettings(); // Abre la configuración de la app para que el usuario conceda el permiso
+  // }
+  // Inicializa AndroidAlarmManager
+  await AndroidAlarmManager.initialize();
+  // Programa la alarma diaria
+  // Iniciar el servicio en primer plano
+  UsageMonitoringService.startService();
+
   if (await Permission.ignoreBatteryOptimizations.isDenied) {
-    await openAppSettings(); // Abre la configuración de la app para que el usuario permita ignorar optimizaciones
+    await openAppSettings(); // Abrir configuración para que el usuario permita ignorar optimizaciones
   }
+
+  await BackgroundService
+      .scheduleDailyAlarms(); // Llama al método que programa la tarea diaria
 
   // Inicializar el WorkManager y el Android Alarm Manager
   await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
-  // await AndroidAlarmManager.initialize();
 
   // Iniciar la tarea periódica cada 15 minutos con WorkManager
   Workmanager().registerPeriodicTask(
@@ -32,8 +49,8 @@ void main() async {
     initialDelay: Duration(minutes: 1), // Delay inicial antes de comenzar
     existingWorkPolicy: ExistingWorkPolicy.keep, // Evita sobrescribir tareas
     constraints: Constraints(
-      networkType:
-          NetworkType.not_required, // Permite ejecutar incluso sin internet
+      networkType: NetworkType.not_required, // Ejecutar incluso sin internet
+      requiresBatteryNotLow: false, // Ejecutar incluso con batería baja
     ),
   );
 
@@ -41,19 +58,26 @@ void main() async {
   runApp(MyAppInitializer());
 
   // Inicializar el Isolate para tareas en segundo plano después de que la app esté completamente cargada
-  initializeIsolate();
+  // initializeIsolate();
 }
 
+// @pragma('vm:entry-point')
+// void callbackDispatcher() {
+//   Workmanager().executeTask((task, inputData) async {
+//     try {
+//       await BackgroundService.checkUsage();
+//       return Future.value(true); // Marca la tarea como completada
+//     } catch (e) {
+//       print("Error en la tarea de WorkManager: $e");
+//       return Future.value(false); // Marca la tarea como fallida
+//     }
+//   });
+// }
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    try {
-      await BackgroundService.checkUsage();
-      return Future.value(true); // Marca la tarea como completada
-    } catch (e) {
-      print("Error en la tarea de WorkManager: $e");
-      return Future.value(false); // Marca la tarea como fallida
-    }
+    await UsageMonitoringService.checkUsage();
+    return Future.value(true);
   });
 }
 
