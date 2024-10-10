@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ciara/services/usage_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
 class UsageMonitoringService {
@@ -23,23 +24,53 @@ class UsageMonitoringService {
   }
 
   // Inicializa el servicio en primer plano con una notificación persistente
+  // static Future<void> startForegroundService() async {
+  //   if (flutterLocalNotificationsPlugin == null) {
+  //     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  //     const androidInitializationSettings = AndroidInitializationSettings(
+  //         'ic_notificacion'); // Icono personalizado
+  //     const initializationSettings =
+  //         InitializationSettings(android: androidInitializationSettings);
+
+  //     await flutterLocalNotificationsPlugin!.initialize(initializationSettings);
+  //   }
+
+  //   // Mostrar una notificación persistente
+  //   const androidPlatformChannelSpecifics = AndroidNotificationDetails(
+  //     'usage_monitoring_channel',
+  //     'Monitoreo de Uso',
+  //     channelDescription: 'Servicio de monitoreo de uso de aplicaciones',
+  //     importance: Importance.max,
+  //     priority: Priority.high,
+  //     ongoing: true, // Hace la notificación persistente
+  //   );
+
+  //   const platformChannelSpecifics =
+  //       NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  //   await flutterLocalNotificationsPlugin!.show(
+  //     0,
+  //     'Monitoreo Activo',
+  //     'El monitoreo del uso de aplicaciones está en ejecución',
+  //     platformChannelSpecifics,
+  //   );
+  // }
   static Future<void> startForegroundService() async {
     if (flutterLocalNotificationsPlugin == null) {
       flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-      const androidInitializationSettings = AndroidInitializationSettings(
-          'ic_notificacion'); // Icono personalizado
+      const androidInitializationSettings =
+          AndroidInitializationSettings('ic_notificacion');
       const initializationSettings =
           InitializationSettings(android: androidInitializationSettings);
 
       await flutterLocalNotificationsPlugin!.initialize(initializationSettings);
     }
 
-    // Mostrar una notificación persistente
     const androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'usage_monitoring_channel',
       'Monitoreo de Uso',
-      channelDescription: 'Servicio de monitoreo de uso de aplicaciones',
+      channelDescription: 'Monitoreo de uso en segundo plano',
       importance: Importance.max,
       priority: Priority.high,
       ongoing: true, // Hace la notificación persistente
@@ -51,23 +82,29 @@ class UsageMonitoringService {
     await flutterLocalNotificationsPlugin!.show(
       0,
       'Monitoreo Activo',
-      'El monitoreo del uso de aplicaciones está en ejecución',
+      'El monitoreo de uso de aplicaciones está en ejecución',
       platformChannelSpecifics,
     );
   }
 
   // Iniciar el servicio en primer plano y ejecutar checkUsage cada 15 minutos
+  // static void startService() {
+  //   startForegroundService();
+
+  //   // Usar AndroidAlarmManager para ejecutar cada 15 minutos
+  //   AndroidAlarmManager.periodic(const Duration(minutes: 15), 0, checkUsage,
+  //       wakeup: true, allowWhileIdle: true);
+  // }
+
+  // Este método reemplaza al uso de AndroidAlarmManager
+  // Iniciar el servicio en primer plano, el checkUsage se ejecuta con WorkManager
   static void startService() {
     startForegroundService();
-
-    // Usar AndroidAlarmManager para ejecutar cada 15 minutos
-    AndroidAlarmManager.periodic(const Duration(minutes: 15), 0, checkUsage,
-        wakeup: true, allowWhileIdle: true);
   }
 
-  static const int alert1 = 80;
-  static const int alert2 = 100;
-  static const int alert3 = 120;
+  static const int alert1 = 50;
+  static const int alert2 = 60;
+  static const int alert3 = 70;
 
   // Método que ejecuta la tarea de monitoreo de uso
   static Future<void> checkUsage() async {
@@ -132,7 +169,9 @@ class UsageMonitoringService {
       prefs.setBool('hasNotified8Hours', false);
       prefs.setString('lastReset', DateTime.now().toIso8601String());
     }
-
+    final location = tz.getLocation('America/Guayaquil');
+    final now = tz.TZDateTime.now(location);
+    print('*Hora del check:* $now');
     // Mostrar el tiempo de uso en consola cada vez que se chequea
     print(
         "**checkUsage**: Tiempo de uso total de pantalla: ${totalUsageTime} minutos");

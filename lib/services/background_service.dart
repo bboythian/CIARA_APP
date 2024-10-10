@@ -13,8 +13,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:workmanager/workmanager.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'dart:typed_data';
-
 import 'package:ciara/services/usage_monitoring_service.dart';
 
 // Este es el nombre de la tarea de WorkManager
@@ -445,169 +443,169 @@ class BackgroundService {
 
 // ALERTAS DIARIAS
 
-  static const int alert1 = 80;
-  static const int alert2 = 100;
-  static const int alert3 = 120;
+  // static const int alert1 = 10;
+  // static const int alert2 = 20;
+  // static const int alert3 = 30;
 
-  static Future<void> checkUsage() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  // static Future<void> checkUsage() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // Obtener el email desde SharedPreferences
-    String? email = prefs.getString('email');
-    if (email == null) {
-      print('Email no encontrado en SharedPreferences.');
-      return; // Si no hay email guardado, no se ejecuta el resto del proceso
-    }
+  //   // Obtener el email desde SharedPreferences
+  //   String? email = prefs.getString('email');
+  //   if (email == null) {
+  //     print('Email no encontrado en SharedPreferences.');
+  //     return; // Si no hay email guardado, no se ejecuta el resto del proceso
+  //   }
 
-    // Obtener el tiempo total de uso de las apps
-    int totalUsageTime = await UsageService.getTotalUsageToday() ~/ (60 * 1000);
+  //   // Obtener el tiempo total de uso de las apps
+  //   int totalUsageTime = await UsageService.getTotalUsageToday() ~/ (60 * 1000);
 
-    // Verificar si ya se han enviado las notificaciones hoy
-    bool hasNotified4Hours = prefs.getBool('hasNotified4Hours') ?? false;
-    bool hasNotified6Hours = prefs.getBool('hasNotified6Hours') ?? false;
-    bool hasNotified8Hours = prefs.getBool('hasNotified8Hours') ?? false;
+  //   // Verificar si ya se han enviado las notificaciones hoy
+  //   bool hasNotified4Hours = prefs.getBool('hasNotified4Hours') ?? false;
+  //   bool hasNotified6Hours = prefs.getBool('hasNotified6Hours') ?? false;
+  //   bool hasNotified8Hours = prefs.getBool('hasNotified8Hours') ?? false;
 
-    // Revisar si ha alcanzado las 4 horas y aún no se ha enviado la notificación
-    if (totalUsageTime >= alert1 && !hasNotified4Hours) {
-      //4 horas =240
-      //minutos
-      await sendNotificationWithServerData(
-          "¿Qué tal si tomas un descanso y pruebas esta actividad relajante:",
-          email,
-          totalUsageTime);
-      prefs.setBool('hasNotified4Hours', true);
-      print("**ALERT**: Alerta 4 Horas solicitada");
-    }
+  //   // Revisar si ha alcanzado las 4 horas y aún no se ha enviado la notificación
+  //   if (totalUsageTime >= alert1 && !hasNotified4Hours) {
+  //     //4 horas =240
+  //     //minutos
+  //     await sendNotificationWithServerData(
+  //         "¿Qué tal si tomas un descanso y pruebas esta actividad relajante:",
+  //         email,
+  //         totalUsageTime);
+  //     prefs.setBool('hasNotified4Hours', true);
+  //     print("**ALERT**: Alerta 4 Horas solicitada");
+  //   }
 
-    // Revisar si ha alcanzado las 6 horas y aún no se ha enviado la notificación
-    if (totalUsageTime >= alert2 && !hasNotified6Hours) {
-      //6 horas = 360
-      await sendNotificationWithServerData(
-          " ¡Prueba esta alternativa!", email, totalUsageTime);
-      prefs.setBool('hasNotified6Hours', true);
-      print("**ALERT**: Alerta 6 Horas solicitada");
-    }
+  //   // Revisar si ha alcanzado las 6 horas y aún no se ha enviado la notificación
+  //   if (totalUsageTime >= alert2 && !hasNotified6Hours) {
+  //     //6 horas = 360
+  //     await sendNotificationWithServerData(
+  //         " ¡Prueba esta alternativa!", email, totalUsageTime);
+  //     prefs.setBool('hasNotified6Hours', true);
+  //     print("**ALERT**: Alerta 6 Horas solicitada");
+  //   }
 
-    // Revisar si ha alcanzado las 8 horas y aún no se ha enviado la notificación
-    if (totalUsageTime >= alert3 && !hasNotified8Hours) {
-      //9 horas = 480
-      await sendNotificationWithServerData(
-          "Es importante desconectarse un poco. Aquí tienes una idea para recargar energías:",
-          email,
-          totalUsageTime);
-      prefs.setBool('hasNotified8Hours', true);
-      print("**ALERT**: Alerta 8 Horas solicitada");
-    }
+  //   // Revisar si ha alcanzado las 8 horas y aún no se ha enviado la notificación
+  //   if (totalUsageTime >= alert3 && !hasNotified8Hours) {
+  //     //9 horas = 480
+  //     await sendNotificationWithServerData(
+  //         "Es importante desconectarse un poco. Aquí tienes una idea para recargar energías:",
+  //         email,
+  //         totalUsageTime);
+  //     prefs.setBool('hasNotified8Hours', true);
+  //     print("**ALERT**: Alerta 8 Horas solicitada");
+  //   }
 
-    // Reiniciar el estado cada día
-    DateTime lastReset = DateTime.parse(
-        prefs.getString('lastReset') ?? DateTime.now().toIso8601String());
-    if (DateTime.now().difference(lastReset).inDays >= 1) {
-      prefs.setBool('hasNotified4Hours', false);
-      prefs.setBool('hasNotified6Hours', false);
-      prefs.setBool('hasNotified8Hours', false);
-      prefs.setString('lastReset', DateTime.now().toIso8601String());
-    }
+  //   // Reiniciar el estado cada día
+  //   DateTime lastReset = DateTime.parse(
+  //       prefs.getString('lastReset') ?? DateTime.now().toIso8601String());
+  //   if (DateTime.now().difference(lastReset).inDays >= 1) {
+  //     prefs.setBool('hasNotified4Hours', false);
+  //     prefs.setBool('hasNotified6Hours', false);
+  //     prefs.setBool('hasNotified8Hours', false);
+  //     prefs.setString('lastReset', DateTime.now().toIso8601String());
+  //   }
 
-    // Mostrar el tiempo de uso en consola cada vez que se chequea
-    print(
-        "**checkUsage**: Tiempo de uso total de pantalla: ${totalUsageTime} minutos");
-  }
+  //   // Mostrar el tiempo de uso en consola cada vez que se chequea
+  //   print(
+  //       "**checkUsage**: Tiempo de uso total de pantalla: ${totalUsageTime} minutos");
+  // }
 
-  static Future<void> sendNotificationWithServerData(
-      String message, String email, int totalUsageTimeInMinutes) async {
-    if (flutterLocalNotificationsPlugin == null) {
-      await initialize();
-    }
+  // static Future<void> sendNotificationWithServerData(
+  //     String message, String email, int totalUsageTimeInMinutes) async {
+  //   if (flutterLocalNotificationsPlugin == null) {
+  //     await initialize();
+  //   }
 
-    try {
-      // Realizar la solicitud POST al servidor
-      var url =
-          Uri.parse('https://ingsoftware.ucuenca.edu.ec/generar-consulta');
-      var response = await http.post(
-        url,
-        body: {
-          'email': email, // Aquí enviamos el email
-        },
-      );
+  //   try {
+  //     // Realizar la solicitud POST al servidor
+  //     var url =
+  //         Uri.parse('https://ingsoftware.ucuenca.edu.ec/generar-consulta');
+  //     var response = await http.post(
+  //       url,
+  //       body: {
+  //         'email': email, // Aquí enviamos el email
+  //       },
+  //     );
 
-      // Verificar si la respuesta es correcta
-      if (response.statusCode == 200) {
-        // Obtener el texto devuelto por el servidor
-        String serverMessage = response.body;
+  //     // Verificar si la respuesta es correcta
+  //     if (response.statusCode == 200) {
+  //       // Obtener el texto devuelto por el servidor
+  //       String serverMessage = response.body;
 
-        // Obtener el progreso y el color basado en el tiempo de uso
-        int progress = _getProgress(totalUsageTimeInMinutes);
-        Color progressColor = _getProgressColor(totalUsageTimeInMinutes);
+  //       // Obtener el progreso y el color basado en el tiempo de uso
+  //       int progress = _getProgress(totalUsageTimeInMinutes);
+  //       Color progressColor = _getProgressColor(totalUsageTimeInMinutes);
 
-        // Título dinámico basado en el uso
-        String dynamicTitle =
-            _getDynamicTitle(totalUsageTimeInMinutes, message);
+  //       // Título dinámico basado en el uso
+  //       String dynamicTitle =
+  //           _getDynamicTitle(totalUsageTimeInMinutes, message);
 
-        // Mostrar notificación con el mensaje del servidor
-        AndroidNotificationDetails androidPlatformChannelSpecifics =
-            AndroidNotificationDetails(
-          'your_channel_id',
-          'Uso del Teléfono',
-          importance: Importance.max,
-          priority: Priority.high,
-          ticker: 'ticker',
-          styleInformation: BigTextStyleInformation(serverMessage),
-          enableLights: true,
-          ledColor: progressColor, // Cambiar el color del LED según el tiempo
-          ledOnMs: 1000,
-          ledOffMs: 500,
-          showProgress: true,
-          maxProgress: 100, // El progreso máximo será 100%
-          progress: progress, // El progreso actual
-          color: progressColor, // Cambiar el color de la notificación
-        );
+  //       // Mostrar notificación con el mensaje del servidor
+  //       AndroidNotificationDetails androidPlatformChannelSpecifics =
+  //           AndroidNotificationDetails(
+  //         'your_channel_id',
+  //         'Uso del Teléfono',
+  //         importance: Importance.max,
+  //         priority: Priority.high,
+  //         ticker: 'ticker',
+  //         styleInformation: BigTextStyleInformation(serverMessage),
+  //         enableLights: true,
+  //         ledColor: progressColor, // Cambiar el color del LED según el tiempo
+  //         ledOnMs: 1000,
+  //         ledOffMs: 500,
+  //         showProgress: true,
+  //         maxProgress: 100, // El progreso máximo será 100%
+  //         progress: progress, // El progreso actual
+  //         color: progressColor, // Cambiar el color de la notificación
+  //       );
 
-        NotificationDetails platformChannelSpecifics =
-            NotificationDetails(android: androidPlatformChannelSpecifics);
+  //       NotificationDetails platformChannelSpecifics =
+  //           NotificationDetails(android: androidPlatformChannelSpecifics);
 
-        await flutterLocalNotificationsPlugin!.show(
-          0,
-          dynamicTitle, // Mostrar el título dinámico
-          serverMessage, // El mensaje será el texto devuelto por el servidor
-          platformChannelSpecifics,
-          payload: 'item x',
-        );
-      } else {
-        throw Exception(
-            'Error al conectarse al servidor para generar consulta de actividad.');
-      }
-    } catch (error) {
-      print('Error en la solicitud POST: $error (generando consulta)');
-      // Manejar error en la solicitud, puedes enviar una notificación de error si es necesario
-    }
-  }
+  //       await flutterLocalNotificationsPlugin!.show(
+  //         0,
+  //         dynamicTitle, // Mostrar el título dinámico
+  //         serverMessage, // El mensaje será el texto devuelto por el servidor
+  //         platformChannelSpecifics,
+  //         payload: 'item x',
+  //       );
+  //     } else {
+  //       throw Exception(
+  //           'Error al conectarse al servidor para generar consulta de actividad.');
+  //     }
+  //   } catch (error) {
+  //     print('Error en la solicitud POST: $error (generando consulta)');
+  //     // Manejar error en la solicitud, puedes enviar una notificación de error si es necesario
+  //   }
+  // }
 
-  // Función para generar el título dinámico
-  static String _getDynamicTitle(int totalUsageTimeInMinutes, String message) {
-    if (totalUsageTimeInMinutes < alert2) {
-      return "¡Llevas 4 horas con tu teléfono!";
-    } else if (totalUsageTimeInMinutes < alert3) {
-      return "Has alcanzado 6 horas de uso.";
-    } else {
-      return "Has alcanzado el límite diario con 8 horas de uso.";
-    }
-  }
+  // // Función para generar el título dinámico
+  // static String _getDynamicTitle(int totalUsageTimeInMinutes, String message) {
+  //   if (totalUsageTimeInMinutes < alert2) {
+  //     return "¡Llevas 4 horas con tu teléfono!";
+  //   } else if (totalUsageTimeInMinutes < alert3) {
+  //     return "Has alcanzado 6 horas de uso.";
+  //   } else {
+  //     return "Has alcanzado el límite diario con 8 horas de uso.";
+  //   }
+  // }
 
-  static int _getProgress(int totalUsageTimeInMinutes) {
-    const int maxUsageMinutes = alert3;
-    return (totalUsageTimeInMinutes / maxUsageMinutes * 100).toInt();
-  }
+  // static int _getProgress(int totalUsageTimeInMinutes) {
+  //   const int maxUsageMinutes = alert3;
+  //   return (totalUsageTimeInMinutes / maxUsageMinutes * 100).toInt();
+  // }
 
-  static Color _getProgressColor(int totalUsageTimeInMinutes) {
-    if (totalUsageTimeInMinutes < alert2) {
-      return Colors.green;
-    } else if (totalUsageTimeInMinutes < alert3) {
-      return Colors.yellow;
-    } else {
-      return Colors.red;
-    }
-  }
+  // static Color _getProgressColor(int totalUsageTimeInMinutes) {
+  //   if (totalUsageTimeInMinutes < alert2) {
+  //     return Colors.green;
+  //   } else if (totalUsageTimeInMinutes < alert3) {
+  //     return Colors.yellow;
+  //   } else {
+  //     return Colors.red;
+  //   }
+  // }
 
   static Future<void> registerUsageMonitoringTask() async {
     // Workmanager().registerPeriodicTask(
@@ -633,3 +631,216 @@ class BackgroundService {
     );
   }
 }
+///////***********nueva actualizacion  */
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:usage_stats/usage_stats.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:timezone/data/latest.dart' as tz;
+// import 'package:timezone/timezone.dart' as tz;
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
+// import 'package:workmanager/workmanager.dart' as workManager;
+// import 'package:workmanager/workmanager.dart';
+
+// class BackgroundService {
+//   static FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
+
+//   // Inicialización de notificaciones y zonas horarias
+//   static Future<void> initialize() async {
+//     if (flutterLocalNotificationsPlugin == null) {
+//       flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+//       // Configuración inicial para Android
+//       const androidInitializationSettings = AndroidInitializationSettings(
+//           'ic_notificacion'); // Icono personalizado para notificaciones
+//       const initializationSettings =
+//           InitializationSettings(android: androidInitializationSettings);
+
+//       await flutterLocalNotificationsPlugin!.initialize(initializationSettings);
+//       tz.initializeTimeZones(); // Inicializa las zonas horarias para manejar alarmas
+//     }
+//   }
+
+//   // Registrar la tarea de monitoreo de uso
+//   static Future<void> registerUsageMonitoringTask() async {
+//     Workmanager().registerPeriodicTask(
+//       "checkUsageTask",
+//       "checkDailyUsage",
+//       frequency: Duration(minutes: 15), // Ejecutar cada 15 minutos
+//       initialDelay: Duration(minutes: 1), // Delay inicial de 1 minuto
+//       constraints: Constraints(
+//         networkType:
+//             workManager.NetworkType.connected, // Requiere conexión a Internet
+//         requiresBatteryNotLow: false,
+//         requiresCharging: false,
+//       ),
+//     );
+//   }
+
+//   static const int alert1 = 135;
+//   static const int alert2 = 150;
+//   static const int alert3 = 160;
+
+//   // Método que se ejecuta cada 15 minutos para revisar el uso de aplicaciones
+//   static Future<void> checkUsage() async {
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     String? email = prefs.getString('email');
+//     if (email == null) {
+//       print('Email no encontrado en SharedPreferences.');
+//       return; // Si no hay email guardado, no se ejecuta el resto del proceso
+//     }
+
+//     // Obtener el tiempo total de uso del teléfono en el día actual
+//     int totalUsageTime =
+//         await _getTotalUsageToday() ~/ (60 * 1000); // En minutos
+
+//     // Verificar si ya se han enviado notificaciones hoy
+//     bool hasNotified4Hours = prefs.getBool('hasNotified4Hours') ?? false;
+//     bool hasNotified6Hours = prefs.getBool('hasNotified6Hours') ?? false;
+//     bool hasNotified8Hours = prefs.getBool('hasNotified8Hours') ?? false;
+
+//     // Verificar y enviar notificaciones según el tiempo de uso
+//     if (totalUsageTime >= alert1 && !hasNotified4Hours) {
+//       await sendNotificationWithServerData(
+//           "¡Toma un descanso!", email, totalUsageTime);
+//       prefs.setBool('hasNotified4Hours', true);
+//       print("**ALERT**: Notificación enviada a las 4 horas.");
+//     }
+
+//     if (totalUsageTime >= alert2 && !hasNotified6Hours) {
+//       await sendNotificationWithServerData(
+//           "¡Has usado el teléfono por 6 horas!", email, totalUsageTime);
+//       prefs.setBool('hasNotified6Hours', true);
+//       print("**ALERT**: Notificación enviada a las 6 horas.");
+//     }
+
+//     if (totalUsageTime >= alert3 && !hasNotified8Hours) {
+//       await sendNotificationWithServerData(
+//           "¡Desconéctate un poco!", email, totalUsageTime);
+//       prefs.setBool('hasNotified8Hours', true);
+//       print("**ALERT**: Notificación enviada a las 8 horas.");
+//     }
+
+//     // Reiniciar las notificaciones diariamente
+//     DateTime lastReset = DateTime.parse(
+//         prefs.getString('lastReset') ?? DateTime.now().toIso8601String());
+//     if (DateTime.now().difference(lastReset).inDays >= 1) {
+//       prefs.setBool('hasNotified4Hours', false);
+//       prefs.setBool('hasNotified6Hours', false);
+//       prefs.setBool('hasNotified8Hours', false);
+//       prefs.setString('lastReset', DateTime.now().toIso8601String());
+//     }
+
+//     print("**checkUsage**: Tiempo de uso total: $totalUsageTime minutos");
+//   }
+
+//   // Enviar notificación con datos obtenidos del servidor
+//   static Future<void> sendNotificationWithServerData(
+//       String message, String email, int totalUsageTimeInMinutes) async {
+//     if (flutterLocalNotificationsPlugin == null) {
+//       await initialize();
+//     }
+
+//     try {
+//       // Realizar la solicitud POST al servidor
+//       var url =
+//           Uri.parse('https://ingsoftware.ucuenca.edu.ec/generar-consulta');
+//       var response = await http.post(url, body: {'email': email});
+
+//       // Verificar si la respuesta es correcta
+//       if (response.statusCode == 200) {
+//         String serverMessage = response.body;
+//         int progress = _getProgress(totalUsageTimeInMinutes);
+//         Color progressColor = _getProgressColor(totalUsageTimeInMinutes);
+
+//         // Mostrar la notificación con datos dinámicos
+//         AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+//           'usage_channel',
+//           'Uso del Teléfono',
+//           importance: Importance.max,
+//           priority: Priority.high,
+//           enableLights: true,
+//           ledColor: progressColor,
+//           ledOnMs: 1000,
+//           ledOffMs: 500,
+//           showProgress: true,
+//           maxProgress: 100,
+//           progress: progress,
+//         );
+
+//         NotificationDetails notificationDetails =
+//             NotificationDetails(android: androidDetails);
+
+//         await flutterLocalNotificationsPlugin!.show(
+//           0,
+//           message,
+//           serverMessage,
+//           notificationDetails,
+//         );
+//       } else {
+//         throw Exception('Error al conectarse al servidor.');
+//       }
+//     } catch (error) {
+//       print('Error en la solicitud POST: $error');
+//     }
+//   }
+
+//   // Obtener el tiempo total de uso del teléfono en el día actual
+//   static Future<int> _getTotalUsageToday() async {
+//     bool? isGranted = await UsageStats.checkUsagePermission();
+//     if (!isGranted!) {
+//       await UsageStats.grantUsagePermission();
+//     }
+
+//     DateTime now = DateTime.now();
+//     DateTime startDate = DateTime(now.year, now.month, now.day, 0, 0, 0);
+//     DateTime endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+//     List<EventUsageInfo> events =
+//         await UsageStats.queryEvents(startDate, endDate);
+
+//     Map<String, int> usageByApp = {};
+//     Map<String, int> foregroundTimes = {};
+
+//     for (var event in events) {
+//       DateTime eventTime =
+//           DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
+//       String packageName = event.packageName ?? 'Unknown';
+
+//       if (event.eventType == "1") {
+//         foregroundTimes[packageName] = eventTime.millisecondsSinceEpoch;
+//       } else if (event.eventType == "2") {
+//         if (foregroundTimes.containsKey(packageName)) {
+//           int foregroundTime =
+//               eventTime.millisecondsSinceEpoch - foregroundTimes[packageName]!;
+//           usageByApp[packageName] =
+//               (usageByApp[packageName] ?? 0) + foregroundTime;
+//           foregroundTimes.remove(packageName);
+//         }
+//       }
+//     }
+
+//     // Sumar el tiempo total de uso en milisegundos
+//     int totalUsageTimeInMilliseconds =
+//         usageByApp.values.reduce((a, b) => a + b);
+//     return totalUsageTimeInMilliseconds;
+//   }
+
+//   // Obtener progreso para la notificación
+//   static int _getProgress(int totalUsageTimeInMinutes) {
+//     const int maxUsageMinutes = alert3; // 8 horas
+//     return (totalUsageTimeInMinutes / maxUsageMinutes * 100).toInt();
+//   }
+
+//   // Obtener el color de progreso según el tiempo de uso
+//   static Color _getProgressColor(int totalUsageTimeInMinutes) {
+//     if (totalUsageTimeInMinutes < alert2) {
+//       return Colors.green;
+//     } else if (totalUsageTimeInMinutes < alert3) {
+//       return Colors.yellow;
+//     } else {
+//       return Colors.red;
+//     }
+//   }
+// }
