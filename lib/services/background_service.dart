@@ -63,22 +63,21 @@ class BackgroundService {
       final location = tz.getLocation('America/Guayaquil');
       final now = tz.TZDateTime.now(location);
 
-      // Programar la alarma diaria a la hora deseada (e.g., 23:50)
+      // Programar la alarma diaria a las 23:50
       var dailyReportTime =
-          tz.TZDateTime(location, now.year, now.month, now.day, 10, 25);
+          tz.TZDateTime(location, now.year, now.month, now.day, 23, 50);
       if (dailyReportTime.isBefore(now)) {
-        dailyReportTime = dailyReportTime.add(Duration(
-            days:
-                1)); // Asegurar que se programe para el día siguiente si ya ha pasado
+        dailyReportTime = dailyReportTime.add(const Duration(days: 1));
       }
 
+      // Programar la tarea usando AndroidAlarmManager
       await AndroidAlarmManager.oneShotAt(
-        dailyReportTime, // La hora exacta
-        0, // ID único para la alarma
+        dailyReportTime, // Hora exacta
+        1, // ID único para la alarma
         callback, // Función a ejecutar
-        exact: true,
-        wakeup: true,
-        allowWhileIdle: true,
+        exact: true, // Asegurarse de que sea exacto
+        wakeup: true, // Despertar el dispositivo si es necesario
+        allowWhileIdle: true, // Ejecutar incluso en modo inactivo
       );
       print('*HORA ACTUAL* $now');
       print(
@@ -89,8 +88,9 @@ class BackgroundService {
   }
 
   static Future<void> callback() async {
-    await initialize();
+    // await initialize();
     print('Ejecutando callback a la hora programada');
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     email = prefs.getString('email') ?? '**';
 
@@ -151,7 +151,6 @@ class BackgroundService {
         ),
       );
       // Programar la alarma para el siguiente día a la misma hora
-      // Programar la alarma para el día siguiente a la hora especificada
       await scheduleNextDailyAlarm(); // Ajusta la hora y minuto según lo que necesites
     } catch (error) {
       print('Error al enviar el reporte: $error');
@@ -170,12 +169,12 @@ class BackgroundService {
     // Configurar la próxima alarma para el día siguiente a las 23:50
     final nextReportTime =
         tz.TZDateTime(location, now.year, now.month, now.day, 23, 50) //HORAF
-            .add(Duration(days: 1));
+            .add(const Duration(days: 1));
 
     try {
       await AndroidAlarmManager.oneShotAt(
         nextReportTime,
-        1,
+        2,
         callback,
         exact: true,
         wakeup: true,
@@ -193,7 +192,7 @@ class BackgroundService {
     final now = tz.TZDateTime.now(location);
     final retryTime =
         tz.TZDateTime(location, now.year, now.month, now.day, 10, 30) //HORAF
-            .add(Duration(days: 1));
+            .add(const Duration(days: 1));
     // Programar el reintento para las 10:00 AM del día siguiente si no hay conexión
     // final retryTime =
     //     tz.TZDateTime(location, now.year, now.month, now.day, 11, 0)
@@ -202,7 +201,7 @@ class BackgroundService {
     try {
       await AndroidAlarmManager.oneShotAt(
         retryTime,
-        1,
+        3,
         callback,
         exact: true,
         wakeup: true,
@@ -441,6 +440,30 @@ class BackgroundService {
     );
   }
 
+  static Future<void> registerUsageMonitoringTask() async {
+    // Workmanager().registerPeriodicTask(
+    //   "checkUsageTask",
+    //   "checkDailyUsage",
+    //   frequency: Duration(minutes: 15),
+    //   initialDelay: Duration(minutes: 1),
+    //   // existingWorkPolicy: ExistingWorkPolicy.keep,
+    //   constraints: Constraints(
+    //     networkType: workManager.NetworkType.not_required,
+    //   ),
+    // );
+    Workmanager().registerPeriodicTask(
+      "checkUsageTask",
+      "checkDailyUsage",
+      frequency: Duration(minutes: 15),
+      constraints: Constraints(
+        networkType:
+            workManager.NetworkType.not_required, // No requiere internet
+        requiresBatteryNotLow: false, // Ejecutar incluso con batería baja
+        requiresCharging: false, // No requiere estar cargando
+      ),
+    );
+  }
+
 // ALERTAS DIARIAS
 
   // static const int alert1 = 10;
@@ -606,30 +629,6 @@ class BackgroundService {
   //     return Colors.red;
   //   }
   // }
-
-  static Future<void> registerUsageMonitoringTask() async {
-    // Workmanager().registerPeriodicTask(
-    //   "checkUsageTask",
-    //   "checkDailyUsage",
-    //   frequency: Duration(minutes: 15),
-    //   initialDelay: Duration(minutes: 1),
-    //   // existingWorkPolicy: ExistingWorkPolicy.keep,
-    //   constraints: Constraints(
-    //     networkType: workManager.NetworkType.not_required,
-    //   ),
-    // );
-    Workmanager().registerPeriodicTask(
-      "checkUsageTask",
-      "checkDailyUsage",
-      frequency: Duration(minutes: 15),
-      constraints: Constraints(
-        networkType:
-            workManager.NetworkType.not_required, // No requiere internet
-        requiresBatteryNotLow: false, // Ejecutar incluso con batería baja
-        requiresCharging: false, // No requiere estar cargando
-      ),
-    );
-  }
 }
 ///////***********nueva actualizacion  */
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';

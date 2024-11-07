@@ -24,22 +24,18 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.ciara"
-    compileSdkVersion 34
+    compileSdkVersion 34 // Mantén la versión más reciente del SDK
     ndkVersion flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17  // Cambia a Java 17
+        sourceCompatibility JavaVersion.VERSION_17  // Cambia a Java 17 como solicitaste
         targetCompatibility JavaVersion.VERSION_17  // Cambia a Java 17
-        // sourceCompatibility JavaVersion.VERSION_1_8
-        // targetCompatibility JavaVersion.VERSION_1_8
-        // Desactiva el desugar temporalmente
-        coreLibraryDesugaringEnabled = false
     }
 
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = '17' // Asegura compatibilidad con JVM 17
     }
- 
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
@@ -51,6 +47,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
+
     signingConfigs {
         release {
             keyAlias 'CIARA'
@@ -59,10 +56,12 @@ android {
             storePassword '123456' // Reemplaza con la contraseña real que usaste
         }
     }
+
     buildTypes {
         release {
             signingConfig signingConfigs.release // Cambia de 'debug' a 'release'
             minifyEnabled true
+            // Si estás usando Proguard, habilita el archivo de configuración
             // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -74,7 +73,9 @@ flutter {
 
 dependencies {
     implementation "androidx.work:work-runtime:2.8.1"
-    implementation "androidx.work:work-runtime-ktx:2.8.1"
+    implementation "androidx.work:work-runtime-ktx:2.8.1" // Si estás usando Kotlin
+
+    // Dependencias adicionales de AndroidX
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation 'androidx.core:core-ktx:1.10.1'
 }

@@ -1,5 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+// import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ciara/services/usage_service.dart';
 import 'package:http/http.dart' as http;
@@ -102,12 +102,16 @@ class UsageMonitoringService {
     startForegroundService();
   }
 
-  static const int alert1 = 50;
-  static const int alert2 = 60;
-  static const int alert3 = 70;
+  static const int alert1 = 90;
+  static const int alert2 = 120;
+  static const int alert3 = 150;
 
   // Método que ejecuta la tarea de monitoreo de uso
   static Future<void> checkUsage() async {
+    tz.initializeTimeZones(); // Inicializar las zonas horarias
+    // if (!tz.isInitialized) {
+    //   tz.initializeTimeZones(); // Asegura que las zonas horarias estén inicializadas
+    // }
     // Implementar la lógica de checkUsage
     print('Ejecutando checkUsage...');
     // Aquí colocar la lógica de monitoreo de uso
@@ -207,6 +211,44 @@ class UsageMonitoringService {
         String dynamicTitle =
             _getDynamicTitle(totalUsageTimeInMinutes, message);
 
+        // // Definir estilo de la notificación para expandirla
+        // BigTextStyleInformation bigTextStyleInformation =
+        //     BigTextStyleInformation(
+        //   serverMessage, // Texto devuelto por el servidor
+        //   contentTitle: dynamicTitle, // El título que se muestra
+        //   summaryText:
+        //       "Despliega para ver actividad:", // Texto resumido cuando está colapsada
+        //   htmlFormatBigText: true, // Permitir formato HTML si es necesario
+        //   htmlFormatContentTitle: true,
+        //   htmlFormatSummaryText: true,
+        // );
+
+        // // Mostrar notificación con el mensaje del servidor
+        // AndroidNotificationDetails androidPlatformChannelSpecifics =
+        //     AndroidNotificationDetails(
+        //   'your_channel_id',
+        //   'Uso del Teléfono',
+        //   channelDescription:
+        //       'Notificaciones relacionadas con el uso del teléfono',
+        //   importance: Importance.max,
+        //   priority: Priority.high,
+        //   ticker: 'ticker',
+        //   styleInformation: bigTextStyleInformation,
+        //   enableLights: true,
+        //   ledColor: progressColor, // Cambiar el color del LED según el tiempo
+        //   ledOnMs: 1000,
+        //   ledOffMs: 500,
+        //   showProgress: true,
+        //   maxProgress: 100, // El progreso máximo será 100%
+        //   progress: progress, // El progreso actual
+        //   color: progressColor, // Cambiar el color de la notificación
+        //   icon: '@drawable/ic_notification',
+        //   visibility: NotificationVisibility
+        //       .public, // Mostrar contenido en la pantalla de bloqueo
+        //   autoCancel: true, // Se cancela cuando el usuario toca la notificación
+        //   colorized:
+        //       true, // Esta línea asegura que el color personalizado se use
+        // );
         // Mostrar notificación con el mensaje del servidor
         AndroidNotificationDetails androidPlatformChannelSpecifics =
             AndroidNotificationDetails(

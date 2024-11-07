@@ -13,29 +13,60 @@ import 'package:ciara/services/usage_monitoring_service.dart';
 // Nombre del isolate para manejar las tareas en segundo plano
 const String isolateName = 'isolate';
 
-// Método para abrir la configuración de optimización de batería
-Future<void> checkBatteryOptimizationStatus() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool? isBatteryOptimizationDisabled =
-      prefs.getBool('batteryOptimizationDisabled');
+// // Método para abrir la configuración de optimización de batería
+// Future<void> checkBatteryOptimizationStatus() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   bool? isBatteryOptimizationDisabled =
+//       prefs.getBool('batteryOptimizationDisabled');
 
-  if (isBatteryOptimizationDisabled == null || !isBatteryOptimizationDisabled) {
-    // Si no está desactivado o no se ha configurado, abre la configuración
-    openBatteryOptimizationSettings();
-  }
-}
+//   if (isBatteryOptimizationDisabled == null || !isBatteryOptimizationDisabled) {
+//     // Si no está desactivado o no se ha configurado, intenta abrir la configuración
+//     openBatteryOptimizationSettings();
+//   }
+// }
 
+// Future<void> openBatteryOptimizationSettings() async {
+//   final intent = AndroidIntent(
+//     action: 'android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
+//   );
+
+//   try {
+//     bool? canResolve = await intent.canResolveActivity();
+//     if (canResolve == true) {
+//       await intent.launch();
+//       // Después de abrir la configuración, guardar el estado como deshabilitado
+//       SharedPreferences prefs = await SharedPreferences.getInstance();
+//       await prefs.setBool('batteryOptimizationDisabled', true);
+//     } else {
+//       // Si el Intent no es compatible, abrir la configuración general como alternativa
+//       print(
+//           'No se pudo abrir la configuración de optimización de batería. Abriendo configuración general.');
+//       await openSettingsManually();
+//     }
+//   } catch (e) {
+//     print('Error al intentar abrir la configuración: $e');
+//     // Como fallback, abrir la configuración general del dispositivo
+//     await openSettingsManually();
+//   }
+// }
+
+// Future<void> openSettingsManually() async {
+//   final intent = AndroidIntent(
+//     action: 'android.settings.SETTINGS',
+//   );
+//   await intent.launch();
+// }
 void openBatteryOptimizationSettings() async {
   final intent = AndroidIntent(
     action: 'android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS',
   );
   intent.launch();
 
-  // Después de abrir la configuración, puedes guardar el estado como deshabilitado
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setBool('batteryOptimizationDisabled', true);
 }
 
+// Método que será llamado por WorkManager cada 15 minutos
 // Método que será llamado por WorkManager cada 15 minutos
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -63,23 +94,19 @@ void main() async {
     "checkUsageTask",
     "checkDailyUsage",
     frequency: Duration(minutes: 15),
-    initialDelay:
-        Duration(minutes: 1), // Opcional, ajusta si deseas un retraso inicial
-    existingWorkPolicy: ExistingWorkPolicy.keep, // Mantener las tareas previas
+    initialDelay: Duration(minutes: 1), // Ajusta si deseas un retraso inicial
+    existingWorkPolicy: ExistingWorkPolicy.keep, // Mantener tareas previas
     constraints: Constraints(
       networkType: NetworkType.connected, // Requiere conexión a Internet
-      requiresBatteryNotLow: true, // No ejecutar si la batería está baja
+      requiresBatteryNotLow: false, // Se puede ejecutar con batería baja
       requiresCharging: false, // No necesita estar cargando
       requiresDeviceIdle:
-          false, // Se puede ejecutar mientras el dispositivo está en uso
+          false, // Puede ejecutarse mientras el dispositivo está en uso
     ),
   );
 
   // Verificar y abrir configuración de optimización de batería si es necesario
-  await checkBatteryOptimizationStatus();
-
-  // Inicializar las notificaciones locales
-  // await BackgroundService.initialize();
+  // await checkBatteryOptimizationStatus();
 
   // Iniciar servicio en primer plano
   await UsageMonitoringService.startForegroundService();
@@ -88,7 +115,7 @@ void main() async {
   runApp(MyAppInitializer());
 
   // Inicializar el Isolate para tareas en segundo plano
-  initializeIsolate();
+  // initializeIsolate();
 }
 
 // Pantalla de carga que se muestra al iniciar la aplicación
@@ -221,15 +248,15 @@ class MyAppWithLoading extends StatelessWidget {
 }
 
 // Inicializar el Isolate para manejar tareas en segundo plano
-void initializeIsolate() {
-  final ReceivePort port = ReceivePort();
-  final isRegistered = IsolateNameServer.lookupPortByName(isolateName);
+// void initializeIsolate() {
+//   final ReceivePort port = ReceivePort();
+//   final isRegistered = IsolateNameServer.lookupPortByName(isolateName);
 
-  if (isRegistered == null) {
-    IsolateNameServer.registerPortWithName(port.sendPort, isolateName);
-  }
+//   if (isRegistered == null) {
+//     IsolateNameServer.registerPortWithName(port.sendPort, isolateName);
+//   }
 
-  port.listen((dynamic data) {
-    debugPrint("Isolate received: $data");
-  });
-}
+//   port.listen((dynamic data) {
+//     debugPrint("Isolate received: $data");
+//   });
+// }
