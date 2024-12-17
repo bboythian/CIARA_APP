@@ -18,19 +18,21 @@ import 'package:ciara/services/usage_monitoring_service.dart';
 // Este es el nombre de la tarea de WorkManager
 const String dailyAlarmTask = "dailyAlarmTask";
 
-// void callbackDispatcher() {
-//   print("callbackDispatcher ejecutado");
-//   Workmanager().executeTask((task, inputData) async {
-//     await BackgroundService.scheduleDailyAlarms();
-//     print("Tarea ejecutada: $task");
-//     return Future.value(true);
-//   });
-// }
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     // Aquí llamamos a la función checkUsage del servicio en primer plano
     await UsageMonitoringService.checkUsage();
+    print("Tarea ejecutada: $task");
     return Future.value(true); // Indicar que la tarea se completó
+  });
+}
+
+//verificar conectividad
+void initializeConnectivityListener() {
+  Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+    if (result != ConnectivityResult.none) {
+      BackgroundService.trySendFailedData();
+    }
   });
 }
 
@@ -57,15 +59,15 @@ class BackgroundService {
       await initialize();
       // await startForegroundService(); // Iniciar el servicio en primer plano
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      email = prefs.getString('email') ?? '**';
+      // SharedPreferences prefs = await SharedPreferences.getInstance();
+      // email = prefs.getString('email') ?? '**';
 
-      final location = tz.getLocation('America/Guayaquil');
+      final location = tz.local;
       final now = tz.TZDateTime.now(location);
 
-      // Programar la alarma diaria a las 23:50
+      // Programar la alarma para las 12:15
       var dailyReportTime =
-          tz.TZDateTime(location, now.year, now.month, now.day, 23, 50);
+          tz.TZDateTime(location, now.year, now.month, now.day, 12, 15);
       if (dailyReportTime.isBefore(now)) {
         dailyReportTime = dailyReportTime.add(const Duration(days: 1));
       }
@@ -87,6 +89,7 @@ class BackgroundService {
     }
   }
 
+  @pragma('vm:entry-point')
   static Future<void> callback() async {
     // await initialize();
     print('Ejecutando callback a la hora programada');
@@ -162,6 +165,7 @@ class BackgroundService {
     }
   }
 
+  @pragma('vm:entry-point')
   static Future<void> scheduleNextDailyAlarm() async {
     final location = tz.getLocation('America/Guayaquil');
     final now = tz.TZDateTime.now(location);
@@ -186,6 +190,7 @@ class BackgroundService {
     }
   }
 
+  @pragma('vm:entry-point')
   static Future<void> _scheduleRetryAlarm() async {
     // Reintento a las 10 AM
     final location = tz.getLocation('America/Guayaquil');
@@ -221,6 +226,7 @@ class BackgroundService {
     }
   }
 
+  @pragma('vm:entry-point')
   static Future<void> trySendFailedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? failedDate = prefs.getString('failedDate');
@@ -440,17 +446,8 @@ class BackgroundService {
     );
   }
 
+//TAREA B: CheckUsage
   static Future<void> registerUsageMonitoringTask() async {
-    // Workmanager().registerPeriodicTask(
-    //   "checkUsageTask",
-    //   "checkDailyUsage",
-    //   frequency: Duration(minutes: 15),
-    //   initialDelay: Duration(minutes: 1),
-    //   // existingWorkPolicy: ExistingWorkPolicy.keep,
-    //   constraints: Constraints(
-    //     networkType: workManager.NetworkType.not_required,
-    //   ),
-    // );
     Workmanager().registerPeriodicTask(
       "checkUsageTask",
       "checkDailyUsage",

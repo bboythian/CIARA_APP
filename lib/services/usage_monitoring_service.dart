@@ -74,6 +74,7 @@ class UsageMonitoringService {
       importance: Importance.max,
       priority: Priority.high,
       ongoing: true, // Hace la notificación persistente
+      autoCancel: false, // Impide que se cancele al interactuar
     );
 
     const platformChannelSpecifics =
@@ -102,16 +103,13 @@ class UsageMonitoringService {
     startForegroundService();
   }
 
-  static const int alert1 = 90;
-  static const int alert2 = 120;
-  static const int alert3 = 150;
+  static const int alert1 = 60;
+  static const int alert2 = 90;
+  static const int alert3 = 120;
 
   // Método que ejecuta la tarea de monitoreo de uso
   static Future<void> checkUsage() async {
     tz.initializeTimeZones(); // Inicializar las zonas horarias
-    // if (!tz.isInitialized) {
-    //   tz.initializeTimeZones(); // Asegura que las zonas horarias estén inicializadas
-    // }
     // Implementar la lógica de checkUsage
     print('Ejecutando checkUsage...');
     // Aquí colocar la lógica de monitoreo de uso

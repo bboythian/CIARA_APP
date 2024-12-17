@@ -4,14 +4,11 @@ import 'screens/welcome_screen.dart';
 import 'screens/user_preferences_screen.dart';
 import 'screens/my_app.dart';
 import 'package:workmanager/workmanager.dart';
-import 'dart:isolate';
 import 'dart:ui';
 import 'services/background_service.dart';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:ciara/services/usage_monitoring_service.dart';
-
-// Nombre del isolate para manejar las tareas en segundo plano
-const String isolateName = 'isolate';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 // // Método para abrir la configuración de optimización de batería
 // Future<void> checkBatteryOptimizationStatus() async {
@@ -56,6 +53,7 @@ const String isolateName = 'isolate';
 //   );
 //   await intent.launch();
 // }
+
 void openBatteryOptimizationSettings() async {
   final intent = AndroidIntent(
     action: 'android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS',
@@ -66,8 +64,7 @@ void openBatteryOptimizationSettings() async {
   await prefs.setBool('batteryOptimizationDisabled', true);
 }
 
-// Método que será llamado por WorkManager cada 15 minutos
-// Método que será llamado por WorkManager cada 15 minutos
+// TAREA B: Método que será llamado por WorkManager cada 15 minutos
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
@@ -85,6 +82,11 @@ void callbackDispatcher() {
 void main() async {
   // Asegurarse de que Flutter esté inicializado antes de cualquier operación
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar AndroidAlarmManager
+  await AndroidAlarmManager.initialize();
+
+  BackgroundService.scheduleDailyAlarms();
 
   // Inicializar el WorkManager
   await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
@@ -198,7 +200,15 @@ class MyAppInitializer extends StatelessWidget {
 // Inicializar las dependencias críticas para el inicio de la aplicación
 Future<Map<String, dynamic>> initializeApp() async {
   // Inicializar SharedPreferences
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+  SharedPreferences prefs;
+  try {
+    prefs = await SharedPreferences.getInstance();
+  } catch (e) {
+    // Manejo del error
+    print("Error al inicializar SharedPreferences: $e");
+    rethrow; // Propagar el error o mostrar una pantalla de error
+  }
+
   String? storedEmail = prefs.getString('email');
   bool? hasCompletedPreferences = prefs.getBool('hasCompletedPreferences');
 
@@ -246,17 +256,3 @@ class MyAppWithLoading extends StatelessWidget {
     return homeScreen;
   }
 }
-
-// Inicializar el Isolate para manejar tareas en segundo plano
-// void initializeIsolate() {
-//   final ReceivePort port = ReceivePort();
-//   final isRegistered = IsolateNameServer.lookupPortByName(isolateName);
-
-//   if (isRegistered == null) {
-//     IsolateNameServer.registerPortWithName(port.sendPort, isolateName);
-//   }
-
-//   port.listen((dynamic data) {
-//     debugPrint("Isolate received: $data");
-//   });
-// }
