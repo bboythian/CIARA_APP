@@ -106,8 +106,8 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
       print('Response body: ${response.body}');
 
       // Asegúrate de inicializar el servicio antes de programar alarmas
-      await BackgroundService.initialize();
-      await BackgroundService.scheduleDailyAlarms();
+      // await BackgroundService.initialize();
+      // await BackgroundService.scheduleDailyAlarms();
     } catch (error) {
       print('Error al enviar las preferencias: $error');
     }
@@ -165,11 +165,11 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    const Text('1. ¿Tienes mascotas que vivan con usted?'),
+                    const Text('1. ¿Tienes mascotas que vivan contigo?'),
                     _buildToggleButtons('mascota', ['Si', 'No']),
                     const SizedBox(height: 20),
                     const Text(
-                        '2. ¿Cómo manejas tus responsabilidades en casa?'),
+                        '2. ¿Cómo sueles manejar tus responsabilidades en casa?'),
                     _buildToggleButtons('responsabilidadesEnCasa', [
                       'Cumplo con todas',
                       'Solo cuando me lo piden',
@@ -178,12 +178,12 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                     ]),
                     const SizedBox(height: 10),
                     const Text(
-                        '3. Seleccione su jornada de clases más habitual.'),
+                        '3. Seleccione tu jornada de clases más habitual.'),
                     _buildToggleButtons('horarioClases',
                         ['Matutino', 'Vespertino', 'Nocturno']),
                     const SizedBox(height: 10),
                     const Text(
-                        '4. ¿Cómo describirías el estado de tu espacio personal en general?'),
+                        '4. ¿Cómo describirías, en general, el estado de tu espacio personal?'),
                     _buildToggleButtons('espacioOrdenado', [
                       'Siempre ordenado',
                       'Generalmente ordenado',
@@ -192,7 +192,7 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                     ]),
                     const SizedBox(height: 10),
                     const Text(
-                        '5. Selecciona 3 actividades FUERA DE CASA que más disfrute.'),
+                        '5. Selecciona 3 actividades que más disfrutes FUERA DE CASA.'),
                     _buildMultipleChoiceToggleButtons('actividadesAireLibre', [
                       'Practicar algún deporte o actividad física',
                       'Salir a caminar',
@@ -212,7 +212,7 @@ class _UserPreferencesScreenState extends State<UserPreferencesScreen> {
                     ]),
                     const SizedBox(height: 10),
                     const Text(
-                        '6. Selecciona 3 actividades EN CASA que más disfrute SIN USAR TECNOLOGÍA'),
+                        '6. Selecciona 3 actividades que más disfrutes EN CASA, SIN USAR TECNOLOGÍA'),
                     _buildMultipleChoiceToggleButtons('actividadesEnCasa', [
                       'Leer',
                       'Tocar algún instrumento',

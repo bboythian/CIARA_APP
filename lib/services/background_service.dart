@@ -43,8 +43,8 @@ class BackgroundService {
   static Future<void> initialize() async {
     if (flutterLocalNotificationsPlugin == null) {
       flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-      const androidInitializationSettings = AndroidInitializationSettings(
-          'ic_notificacion'); // Ajusta el ícono según tu configuración
+      const androidInitializationSettings =
+          AndroidInitializationSettings('ic_notificacion0');
 
       const initializationSettings =
           InitializationSettings(android: androidInitializationSettings);
@@ -67,7 +67,7 @@ class BackgroundService {
 
       // Programar la alarma para las 12:15
       var dailyReportTime =
-          tz.TZDateTime(location, now.year, now.month, now.day, 12, 15);
+          tz.TZDateTime(location, now.year, now.month, now.day, 23, 50);
       if (dailyReportTime.isBefore(now)) {
         dailyReportTime = dailyReportTime.add(const Duration(days: 1));
       }
@@ -91,7 +91,7 @@ class BackgroundService {
 
   @pragma('vm:entry-point')
   static Future<void> callback() async {
-    // await initialize();
+    await initialize();
     print('Ejecutando callback a la hora programada');
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -116,7 +116,7 @@ class BackgroundService {
       // Sin conexión a internet, guardar datos y programar reintento a las 10 AM
       print('Sin conexión a internet. Guardando datos localmente...');
       await saveDataLocally(formattedDate, mostHour, dataToSend);
-      await _scheduleRetryAlarm(); // Reintento a las 11 AM
+      // await _scheduleRetryAlarm(); // Reintento a las 11 AM
       return; // Salir del callback si no hay conexión
     }
 
@@ -131,15 +131,7 @@ class BackgroundService {
           'usageData': jsonEncode(dataToSend),
         },
       );
-
-      // if (response.statusCode == 200) {
-      //   _showNotification("Reporte diario enviado exitosamente!");
-      //   print('Reporte enviado exitosamente.');
-      //   await _clearFailedData(); // Limpiar datos si se envían correctamente
-      // } else {
-      //   throw Exception('Error al enviar el reporte.');
-      // }
-      print('Response status: ${response.statusCode}');
+      print('Response status callback: ${response.statusCode}');
       print('Response body: ${response.body}');
       flutterLocalNotificationsPlugin!.show(
         0,
@@ -153,14 +145,8 @@ class BackgroundService {
           ),
         ),
       );
-      // Programar la alarma para el siguiente día a la misma hora
-      await scheduleNextDailyAlarm(); // Ajusta la hora y minuto según lo que necesites
     } catch (error) {
-      print('Error al enviar el reporte: $error');
-      await saveDataLocally(formattedDate, mostHour, dataToSend);
-      await _scheduleRetryAlarm(); // Programar reintento si falla
-      // Programar la siguiente alarma diaria
-      await scheduleNextDailyAlarm();
+      print('Error al enviar el reporte diario: $error');
       return;
     }
   }
@@ -196,12 +182,8 @@ class BackgroundService {
     final location = tz.getLocation('America/Guayaquil');
     final now = tz.TZDateTime.now(location);
     final retryTime =
-        tz.TZDateTime(location, now.year, now.month, now.day, 10, 30) //HORAF
+        tz.TZDateTime(location, now.year, now.month, now.day, 20, 00) //HORAF
             .add(const Duration(days: 1));
-    // Programar el reintento para las 10:00 AM del día siguiente si no hay conexión
-    // final retryTime =
-    //     tz.TZDateTime(location, now.year, now.month, now.day, 11, 0)
-    //         .add(Duration(days: now.hour >= 10 ? 1 : 0));
 
     try {
       await AndroidAlarmManager.oneShotAt(
@@ -211,15 +193,7 @@ class BackgroundService {
         exact: true,
         wakeup: true,
       );
-      // await Workmanager().registerOneOffTask(
-      //   "retryAlarmTask",
-      //   dailyAlarmTask,
-      //   initialDelay: retryTime.difference(DateTime.now()),
-      //   constraints: Constraints(
-      //     networkType:
-      //         workManager.NetworkType.connected, // Requiere conexión a internet
-      //   ),
-      // );
+
       print('Reintento programado para: $retryTime');
     } catch (e) {
       print('Error al programar el reintento: $e');
@@ -359,19 +333,35 @@ class BackgroundService {
       Map<String, int> usageByApp = {};
       Map<String, int> foregroundTimes = {};
 
+      // Inicializar el vector de tiempos para cada rango
+      List<int> timeByRanges = List.filled(8, 0); // Inicializa con 8 ceros.
+
       for (var event in events) {
         DateTime eventTime =
             DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
         String packageName = event.packageName ?? 'Unknown';
-
+        // Procesar eventos de inicio y fin de uso
         if (event.eventType == "1") {
           foregroundTimes[packageName] = eventTime.millisecondsSinceEpoch;
         } else if (event.eventType == "2") {
           if (foregroundTimes.containsKey(packageName)) {
-            int foregroundTime = eventTime.millisecondsSinceEpoch -
-                foregroundTimes[packageName]!;
+            int startTime = foregroundTimes[packageName]!;
+            int endTime = eventTime.millisecondsSinceEpoch;
+            int foregroundTime = endTime - startTime;
+
             usageByApp[packageName] =
                 (usageByApp[packageName] ?? 0) + foregroundTime;
+
+            // Calcular tiempo en cada rango horario
+            int startHour = DateTime.fromMillisecondsSinceEpoch(startTime).hour;
+            int endHour = DateTime.fromMillisecondsSinceEpoch(endTime).hour;
+
+            for (int i = startHour; i <= endHour; i++) {
+              int rangeIndex = _getRangeIndex(i);
+              timeByRanges[rangeIndex] +=
+                  foregroundTime ~/ 60000; // Convertir a minutos.
+            }
+
             foregroundTimes.remove(packageName);
           }
         }
@@ -406,10 +396,30 @@ class BackgroundService {
           );
         }
       }
+      // Agregar el vector de tiempos como un elemento adicional
+      usageInfoList.add(
+        UsageInfo(
+          packageName: "AllRegistration",
+          totalTimeInForeground: timeByRanges.toString(),
+        ),
+      );
     } catch (err) {
       print("Error: $err");
     }
     return usageInfoList;
+  }
+
+  // Función auxiliar para determinar el índice del rango basado en la hora
+  static int _getRangeIndex(int hour) {
+    if (hour >= 0 && hour <= 2) return 0;
+    if (hour >= 3 && hour <= 5) return 1;
+    if (hour >= 6 && hour <= 8) return 2;
+    if (hour >= 9 && hour <= 11) return 3;
+    if (hour >= 12 && hour <= 14) return 4;
+    if (hour >= 15 && hour <= 17) return 5;
+    if (hour >= 18 && hour <= 20) return 6;
+    if (hour >= 21 && hour <= 23) return 7;
+    return -1; // Caso no válido.
   }
 
   static int _convertTimeToMinutes(String? time) {
@@ -460,383 +470,4 @@ class BackgroundService {
       ),
     );
   }
-
-// ALERTAS DIARIAS
-
-  // static const int alert1 = 10;
-  // static const int alert2 = 20;
-  // static const int alert3 = 30;
-
-  // static Future<void> checkUsage() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  //   // Obtener el email desde SharedPreferences
-  //   String? email = prefs.getString('email');
-  //   if (email == null) {
-  //     print('Email no encontrado en SharedPreferences.');
-  //     return; // Si no hay email guardado, no se ejecuta el resto del proceso
-  //   }
-
-  //   // Obtener el tiempo total de uso de las apps
-  //   int totalUsageTime = await UsageService.getTotalUsageToday() ~/ (60 * 1000);
-
-  //   // Verificar si ya se han enviado las notificaciones hoy
-  //   bool hasNotified4Hours = prefs.getBool('hasNotified4Hours') ?? false;
-  //   bool hasNotified6Hours = prefs.getBool('hasNotified6Hours') ?? false;
-  //   bool hasNotified8Hours = prefs.getBool('hasNotified8Hours') ?? false;
-
-  //   // Revisar si ha alcanzado las 4 horas y aún no se ha enviado la notificación
-  //   if (totalUsageTime >= alert1 && !hasNotified4Hours) {
-  //     //4 horas =240
-  //     //minutos
-  //     await sendNotificationWithServerData(
-  //         "¿Qué tal si tomas un descanso y pruebas esta actividad relajante:",
-  //         email,
-  //         totalUsageTime);
-  //     prefs.setBool('hasNotified4Hours', true);
-  //     print("**ALERT**: Alerta 4 Horas solicitada");
-  //   }
-
-  //   // Revisar si ha alcanzado las 6 horas y aún no se ha enviado la notificación
-  //   if (totalUsageTime >= alert2 && !hasNotified6Hours) {
-  //     //6 horas = 360
-  //     await sendNotificationWithServerData(
-  //         " ¡Prueba esta alternativa!", email, totalUsageTime);
-  //     prefs.setBool('hasNotified6Hours', true);
-  //     print("**ALERT**: Alerta 6 Horas solicitada");
-  //   }
-
-  //   // Revisar si ha alcanzado las 8 horas y aún no se ha enviado la notificación
-  //   if (totalUsageTime >= alert3 && !hasNotified8Hours) {
-  //     //9 horas = 480
-  //     await sendNotificationWithServerData(
-  //         "Es importante desconectarse un poco. Aquí tienes una idea para recargar energías:",
-  //         email,
-  //         totalUsageTime);
-  //     prefs.setBool('hasNotified8Hours', true);
-  //     print("**ALERT**: Alerta 8 Horas solicitada");
-  //   }
-
-  //   // Reiniciar el estado cada día
-  //   DateTime lastReset = DateTime.parse(
-  //       prefs.getString('lastReset') ?? DateTime.now().toIso8601String());
-  //   if (DateTime.now().difference(lastReset).inDays >= 1) {
-  //     prefs.setBool('hasNotified4Hours', false);
-  //     prefs.setBool('hasNotified6Hours', false);
-  //     prefs.setBool('hasNotified8Hours', false);
-  //     prefs.setString('lastReset', DateTime.now().toIso8601String());
-  //   }
-
-  //   // Mostrar el tiempo de uso en consola cada vez que se chequea
-  //   print(
-  //       "**checkUsage**: Tiempo de uso total de pantalla: ${totalUsageTime} minutos");
-  // }
-
-  // static Future<void> sendNotificationWithServerData(
-  //     String message, String email, int totalUsageTimeInMinutes) async {
-  //   if (flutterLocalNotificationsPlugin == null) {
-  //     await initialize();
-  //   }
-
-  //   try {
-  //     // Realizar la solicitud POST al servidor
-  //     var url =
-  //         Uri.parse('https://ingsoftware.ucuenca.edu.ec/generar-consulta');
-  //     var response = await http.post(
-  //       url,
-  //       body: {
-  //         'email': email, // Aquí enviamos el email
-  //       },
-  //     );
-
-  //     // Verificar si la respuesta es correcta
-  //     if (response.statusCode == 200) {
-  //       // Obtener el texto devuelto por el servidor
-  //       String serverMessage = response.body;
-
-  //       // Obtener el progreso y el color basado en el tiempo de uso
-  //       int progress = _getProgress(totalUsageTimeInMinutes);
-  //       Color progressColor = _getProgressColor(totalUsageTimeInMinutes);
-
-  //       // Título dinámico basado en el uso
-  //       String dynamicTitle =
-  //           _getDynamicTitle(totalUsageTimeInMinutes, message);
-
-  //       // Mostrar notificación con el mensaje del servidor
-  //       AndroidNotificationDetails androidPlatformChannelSpecifics =
-  //           AndroidNotificationDetails(
-  //         'your_channel_id',
-  //         'Uso del Teléfono',
-  //         importance: Importance.max,
-  //         priority: Priority.high,
-  //         ticker: 'ticker',
-  //         styleInformation: BigTextStyleInformation(serverMessage),
-  //         enableLights: true,
-  //         ledColor: progressColor, // Cambiar el color del LED según el tiempo
-  //         ledOnMs: 1000,
-  //         ledOffMs: 500,
-  //         showProgress: true,
-  //         maxProgress: 100, // El progreso máximo será 100%
-  //         progress: progress, // El progreso actual
-  //         color: progressColor, // Cambiar el color de la notificación
-  //       );
-
-  //       NotificationDetails platformChannelSpecifics =
-  //           NotificationDetails(android: androidPlatformChannelSpecifics);
-
-  //       await flutterLocalNotificationsPlugin!.show(
-  //         0,
-  //         dynamicTitle, // Mostrar el título dinámico
-  //         serverMessage, // El mensaje será el texto devuelto por el servidor
-  //         platformChannelSpecifics,
-  //         payload: 'item x',
-  //       );
-  //     } else {
-  //       throw Exception(
-  //           'Error al conectarse al servidor para generar consulta de actividad.');
-  //     }
-  //   } catch (error) {
-  //     print('Error en la solicitud POST: $error (generando consulta)');
-  //     // Manejar error en la solicitud, puedes enviar una notificación de error si es necesario
-  //   }
-  // }
-
-  // // Función para generar el título dinámico
-  // static String _getDynamicTitle(int totalUsageTimeInMinutes, String message) {
-  //   if (totalUsageTimeInMinutes < alert2) {
-  //     return "¡Llevas 4 horas con tu teléfono!";
-  //   } else if (totalUsageTimeInMinutes < alert3) {
-  //     return "Has alcanzado 6 horas de uso.";
-  //   } else {
-  //     return "Has alcanzado el límite diario con 8 horas de uso.";
-  //   }
-  // }
-
-  // static int _getProgress(int totalUsageTimeInMinutes) {
-  //   const int maxUsageMinutes = alert3;
-  //   return (totalUsageTimeInMinutes / maxUsageMinutes * 100).toInt();
-  // }
-
-  // static Color _getProgressColor(int totalUsageTimeInMinutes) {
-  //   if (totalUsageTimeInMinutes < alert2) {
-  //     return Colors.green;
-  //   } else if (totalUsageTimeInMinutes < alert3) {
-  //     return Colors.yellow;
-  //   } else {
-  //     return Colors.red;
-  //   }
-  // }
 }
-///////***********nueva actualizacion  */
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:usage_stats/usage_stats.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:timezone/data/latest.dart' as tz;
-// import 'package:timezone/timezone.dart' as tz;
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:workmanager/workmanager.dart' as workManager;
-// import 'package:workmanager/workmanager.dart';
-
-// class BackgroundService {
-//   static FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
-
-//   // Inicialización de notificaciones y zonas horarias
-//   static Future<void> initialize() async {
-//     if (flutterLocalNotificationsPlugin == null) {
-//       flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-//       // Configuración inicial para Android
-//       const androidInitializationSettings = AndroidInitializationSettings(
-//           'ic_notificacion'); // Icono personalizado para notificaciones
-//       const initializationSettings =
-//           InitializationSettings(android: androidInitializationSettings);
-
-//       await flutterLocalNotificationsPlugin!.initialize(initializationSettings);
-//       tz.initializeTimeZones(); // Inicializa las zonas horarias para manejar alarmas
-//     }
-//   }
-
-//   // Registrar la tarea de monitoreo de uso
-//   static Future<void> registerUsageMonitoringTask() async {
-//     Workmanager().registerPeriodicTask(
-//       "checkUsageTask",
-//       "checkDailyUsage",
-//       frequency: Duration(minutes: 15), // Ejecutar cada 15 minutos
-//       initialDelay: Duration(minutes: 1), // Delay inicial de 1 minuto
-//       constraints: Constraints(
-//         networkType:
-//             workManager.NetworkType.connected, // Requiere conexión a Internet
-//         requiresBatteryNotLow: false,
-//         requiresCharging: false,
-//       ),
-//     );
-//   }
-
-//   static const int alert1 = 135;
-//   static const int alert2 = 150;
-//   static const int alert3 = 160;
-
-//   // Método que se ejecuta cada 15 minutos para revisar el uso de aplicaciones
-//   static Future<void> checkUsage() async {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     String? email = prefs.getString('email');
-//     if (email == null) {
-//       print('Email no encontrado en SharedPreferences.');
-//       return; // Si no hay email guardado, no se ejecuta el resto del proceso
-//     }
-
-//     // Obtener el tiempo total de uso del teléfono en el día actual
-//     int totalUsageTime =
-//         await _getTotalUsageToday() ~/ (60 * 1000); // En minutos
-
-//     // Verificar si ya se han enviado notificaciones hoy
-//     bool hasNotified4Hours = prefs.getBool('hasNotified4Hours') ?? false;
-//     bool hasNotified6Hours = prefs.getBool('hasNotified6Hours') ?? false;
-//     bool hasNotified8Hours = prefs.getBool('hasNotified8Hours') ?? false;
-
-//     // Verificar y enviar notificaciones según el tiempo de uso
-//     if (totalUsageTime >= alert1 && !hasNotified4Hours) {
-//       await sendNotificationWithServerData(
-//           "¡Toma un descanso!", email, totalUsageTime);
-//       prefs.setBool('hasNotified4Hours', true);
-//       print("**ALERT**: Notificación enviada a las 4 horas.");
-//     }
-
-//     if (totalUsageTime >= alert2 && !hasNotified6Hours) {
-//       await sendNotificationWithServerData(
-//           "¡Has usado el teléfono por 6 horas!", email, totalUsageTime);
-//       prefs.setBool('hasNotified6Hours', true);
-//       print("**ALERT**: Notificación enviada a las 6 horas.");
-//     }
-
-//     if (totalUsageTime >= alert3 && !hasNotified8Hours) {
-//       await sendNotificationWithServerData(
-//           "¡Desconéctate un poco!", email, totalUsageTime);
-//       prefs.setBool('hasNotified8Hours', true);
-//       print("**ALERT**: Notificación enviada a las 8 horas.");
-//     }
-
-//     // Reiniciar las notificaciones diariamente
-//     DateTime lastReset = DateTime.parse(
-//         prefs.getString('lastReset') ?? DateTime.now().toIso8601String());
-//     if (DateTime.now().difference(lastReset).inDays >= 1) {
-//       prefs.setBool('hasNotified4Hours', false);
-//       prefs.setBool('hasNotified6Hours', false);
-//       prefs.setBool('hasNotified8Hours', false);
-//       prefs.setString('lastReset', DateTime.now().toIso8601String());
-//     }
-
-//     print("**checkUsage**: Tiempo de uso total: $totalUsageTime minutos");
-//   }
-
-//   // Enviar notificación con datos obtenidos del servidor
-//   static Future<void> sendNotificationWithServerData(
-//       String message, String email, int totalUsageTimeInMinutes) async {
-//     if (flutterLocalNotificationsPlugin == null) {
-//       await initialize();
-//     }
-
-//     try {
-//       // Realizar la solicitud POST al servidor
-//       var url =
-//           Uri.parse('https://ingsoftware.ucuenca.edu.ec/generar-consulta');
-//       var response = await http.post(url, body: {'email': email});
-
-//       // Verificar si la respuesta es correcta
-//       if (response.statusCode == 200) {
-//         String serverMessage = response.body;
-//         int progress = _getProgress(totalUsageTimeInMinutes);
-//         Color progressColor = _getProgressColor(totalUsageTimeInMinutes);
-
-//         // Mostrar la notificación con datos dinámicos
-//         AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-//           'usage_channel',
-//           'Uso del Teléfono',
-//           importance: Importance.max,
-//           priority: Priority.high,
-//           enableLights: true,
-//           ledColor: progressColor,
-//           ledOnMs: 1000,
-//           ledOffMs: 500,
-//           showProgress: true,
-//           maxProgress: 100,
-//           progress: progress,
-//         );
-
-//         NotificationDetails notificationDetails =
-//             NotificationDetails(android: androidDetails);
-
-//         await flutterLocalNotificationsPlugin!.show(
-//           0,
-//           message,
-//           serverMessage,
-//           notificationDetails,
-//         );
-//       } else {
-//         throw Exception('Error al conectarse al servidor.');
-//       }
-//     } catch (error) {
-//       print('Error en la solicitud POST: $error');
-//     }
-//   }
-
-//   // Obtener el tiempo total de uso del teléfono en el día actual
-//   static Future<int> _getTotalUsageToday() async {
-//     bool? isGranted = await UsageStats.checkUsagePermission();
-//     if (!isGranted!) {
-//       await UsageStats.grantUsagePermission();
-//     }
-
-//     DateTime now = DateTime.now();
-//     DateTime startDate = DateTime(now.year, now.month, now.day, 0, 0, 0);
-//     DateTime endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-//     List<EventUsageInfo> events =
-//         await UsageStats.queryEvents(startDate, endDate);
-
-//     Map<String, int> usageByApp = {};
-//     Map<String, int> foregroundTimes = {};
-
-//     for (var event in events) {
-//       DateTime eventTime =
-//           DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
-//       String packageName = event.packageName ?? 'Unknown';
-
-//       if (event.eventType == "1") {
-//         foregroundTimes[packageName] = eventTime.millisecondsSinceEpoch;
-//       } else if (event.eventType == "2") {
-//         if (foregroundTimes.containsKey(packageName)) {
-//           int foregroundTime =
-//               eventTime.millisecondsSinceEpoch - foregroundTimes[packageName]!;
-//           usageByApp[packageName] =
-//               (usageByApp[packageName] ?? 0) + foregroundTime;
-//           foregroundTimes.remove(packageName);
-//         }
-//       }
-//     }
-
-//     // Sumar el tiempo total de uso en milisegundos
-//     int totalUsageTimeInMilliseconds =
-//         usageByApp.values.reduce((a, b) => a + b);
-//     return totalUsageTimeInMilliseconds;
-//   }
-
-//   // Obtener progreso para la notificación
-//   static int _getProgress(int totalUsageTimeInMinutes) {
-//     const int maxUsageMinutes = alert3; // 8 horas
-//     return (totalUsageTimeInMinutes / maxUsageMinutes * 100).toInt();
-//   }
-
-//   // Obtener el color de progreso según el tiempo de uso
-//   static Color _getProgressColor(int totalUsageTimeInMinutes) {
-//     if (totalUsageTimeInMinutes < alert2) {
-//       return Colors.green;
-//     } else if (totalUsageTimeInMinutes < alert3) {
-//       return Colors.yellow;
-//     } else {
-//       return Colors.red;
-//     }
-//   }
-// }

@@ -8,60 +8,35 @@ import 'dart:ui';
 import 'services/background_service.dart';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:ciara/services/usage_monitoring_service.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
-// // Método para abrir la configuración de optimización de batería
-// Future<void> checkBatteryOptimizationStatus() async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   bool? isBatteryOptimizationDisabled =
-//       prefs.getBool('batteryOptimizationDisabled');
-
-//   if (isBatteryOptimizationDisabled == null || !isBatteryOptimizationDisabled) {
-//     // Si no está desactivado o no se ha configurado, intenta abrir la configuración
-//     openBatteryOptimizationSettings();
-//   }
-// }
-
-// Future<void> openBatteryOptimizationSettings() async {
-//   final intent = AndroidIntent(
-//     action: 'android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
-//   );
-
-//   try {
-//     bool? canResolve = await intent.canResolveActivity();
-//     if (canResolve == true) {
-//       await intent.launch();
-//       // Después de abrir la configuración, guardar el estado como deshabilitado
-//       SharedPreferences prefs = await SharedPreferences.getInstance();
-//       await prefs.setBool('batteryOptimizationDisabled', true);
-//     } else {
-//       // Si el Intent no es compatible, abrir la configuración general como alternativa
-//       print(
-//           'No se pudo abrir la configuración de optimización de batería. Abriendo configuración general.');
-//       await openSettingsManually();
-//     }
-//   } catch (e) {
-//     print('Error al intentar abrir la configuración: $e');
-//     // Como fallback, abrir la configuración general del dispositivo
-//     await openSettingsManually();
-//   }
-// }
-
-// Future<void> openSettingsManually() async {
-//   final intent = AndroidIntent(
-//     action: 'android.settings.SETTINGS',
-//   );
-//   await intent.launch();
-// }
-
-void openBatteryOptimizationSettings() async {
-  final intent = AndroidIntent(
-    action: 'android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS',
-  );
-  intent.launch();
-
+// Método para manejar optimización de batería
+Future<void> checkBatteryOptimizationStatus() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('batteryOptimizationDisabled', true);
+  bool? isBatteryOptimizationDisabled =
+      prefs.getBool('batteryOptimizationDisabled');
+
+  if (isBatteryOptimizationDisabled == null || !isBatteryOptimizationDisabled) {
+    openBatteryOptimizationSettings();
+  }
+}
+
+Future<void> openBatteryOptimizationSettings() async {
+  final intent = AndroidIntent(
+    action: 'android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS',
+  );
+
+  try {
+    bool? canResolve = await intent.canResolveActivity();
+    if (canResolve == true) {
+      await intent.launch();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('batteryOptimizationDisabled', true);
+    } else {
+      print('No se pudo abrir la configuración de optimización de batería.');
+    }
+  } catch (e) {
+    print('Error al abrir la configuración de optimización de batería: $e');
+  }
 }
 
 // TAREA B: Método que será llamado por WorkManager cada 15 minutos
@@ -83,13 +58,13 @@ void main() async {
   // Asegurarse de que Flutter esté inicializado antes de cualquier operación
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializar AndroidAlarmManager
-  await AndroidAlarmManager.initialize();
-
-  BackgroundService.scheduleDailyAlarms();
-
   // Inicializar el WorkManager
   await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+
+  // Inicializar AndroidAlarmManager
+  // await AndroidAlarmManager.initialize();
+
+  // BackgroundService.scheduleDailyAlarms();
 
   // Registrar una tarea periódica con WorkManager cada 15 minutos
   Workmanager().registerPeriodicTask(
@@ -107,8 +82,8 @@ void main() async {
     ),
   );
 
-  // Verificar y abrir configuración de optimización de batería si es necesario
-  // await checkBatteryOptimizationStatus();
+  // Verificar y desactivar optimización de batería si es necesario
+  await checkBatteryOptimizationStatus();
 
   // Iniciar servicio en primer plano
   await UsageMonitoringService.startForegroundService();
@@ -213,7 +188,7 @@ Future<Map<String, dynamic>> initializeApp() async {
   bool? hasCompletedPreferences = prefs.getBool('hasCompletedPreferences');
 
   // Inicializar servicios no críticos en segundo plano
-  await initializeNonCriticalServices();
+  // await initializeNonCriticalServices();
 
   return {
     'storedEmail': storedEmail,
@@ -224,7 +199,7 @@ Future<Map<String, dynamic>> initializeApp() async {
 // Inicializar servicios no críticos
 Future<void> initializeNonCriticalServices() async {
   try {
-    await BackgroundService.registerUsageMonitoringTask();
+    // await BackgroundService.registerUsageMonitoringTask();
   } catch (e) {
     print("Error al inicializar servicios no críticos: $e");
   }

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:device_apps/device_apps.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MyApp extends StatefulWidget {
   final String email;
@@ -55,7 +56,7 @@ class _MyAppState extends State<MyApp> {
   void configureLocalNotificationPlugin() {
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     const androidInitializationSettings =
-        AndroidInitializationSettings('ic_notificacion');
+        AndroidInitializationSettings('ic_notificacion0');
     const initializationSettings =
         InitializationSettings(android: androidInitializationSettings);
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
@@ -396,7 +397,7 @@ class _MyAppState extends State<MyApp> {
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 0.0)
-                      .add(const EdgeInsets.only(left: 2.0, right: 80.0)),
+                      .add(const EdgeInsets.only(left: 2.0, right: 90.0)),
                   decoration: const BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -418,71 +419,14 @@ class _MyAppState extends State<MyApp> {
                 _onTabTapped(0);
               },
             ),
-            // const SizedBox(height: 8),
-            // ListTile(
-            //   title: Container(
-            //     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            //     child: Container(
-            //       margin: const EdgeInsets.symmetric(vertical: 0.0)
-            //           .add(const EdgeInsets.only(left: 2.0, right: 130.0)),
-            //       decoration: const BoxDecoration(
-            //         border: Border(
-            //           bottom: BorderSide(
-            //             color: Color(0xFFA51008),
-            //             width: 3.0,
-            //           ),
-            //         ),
-            //       ),
-            //       child: const Text(
-            //         'Uso Semanal',
-            //         style: TextStyle(
-            //           fontFamily: 'FFMetaProText4',
-            //           fontSize: 16,
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            //   // onTap: () {
-            //   //   _onTabTapped(1);
-            //   // },
-            //   enabled: false, // Deshabilitar esta opción
-            // ),
-            // const SizedBox(height: 8),
-            // ListTile(
-            //   title: Container(
-            //     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            //     child: Container(
-            //       margin: const EdgeInsets.symmetric(vertical: 0.0)
-            //           .add(const EdgeInsets.only(left: 2.0, right: 130.0)),
-            //       decoration: const BoxDecoration(
-            //         border: Border(
-            //           bottom: BorderSide(
-            //             color: Color(0xFFA51008),
-            //             width: 3.0,
-            //           ),
-            //         ),
-            //       ),
-            //       child: const Text(
-            //         'Uso Mensual',
-            //         style: TextStyle(
-            //           fontFamily: 'FFMetaProText4',
-            //           fontSize: 16,
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            //   // onTap: () {
-            //   //   _onTabTapped(2);
-            //   // },
-            //   enabled: false,
-            // ),
+
             const SizedBox(height: 8),
             ListTile(
               title: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 0.0)
-                      .add(const EdgeInsets.only(left: 2.0, right: 150.0)),
+                      .add(const EdgeInsets.only(left: 2.0, right: 60.0)),
                   decoration: const BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -492,7 +436,7 @@ class _MyAppState extends State<MyApp> {
                     ),
                   ),
                   child: const Text(
-                    'Privacidad',
+                    'Información del CIARA',
                     style: TextStyle(
                       fontFamily: 'FFMetaProText4',
                       fontSize: 16,
@@ -500,10 +444,9 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
               ),
-              // onTap: () {
-              //   _onTabTapped(2);
-              // },
-              enabled: false,
+              onTap: () {
+                _onTabTapped(2);
+              },
             ),
             const SizedBox(height: 8),
             ListTile(
@@ -529,10 +472,9 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
               ),
-              // onTap: () {
-              //   _onTabTapped(2);
-              // },
-              enabled: false,
+              onTap: () {
+                _onTabTapped(1);
+              },
             ),
             const SizedBox(height: 8),
             ListTile(
@@ -540,7 +482,7 @@ class _MyAppState extends State<MyApp> {
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 0.0)
-                      .add(const EdgeInsets.only(left: 2.0, right: 180.0)),
+                      .add(const EdgeInsets.only(left: 2.0, right: 60.0)),
                   decoration: const BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -550,7 +492,7 @@ class _MyAppState extends State<MyApp> {
                     ),
                   ),
                   child: const Text(
-                    'Ayuda',
+                    'Términos y Privacidad',
                     style: TextStyle(
                       fontFamily: 'FFMetaProText4',
                       fontSize: 16,
@@ -558,11 +500,11 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
               ),
-              // onTap: () {
-              //   _onTabTapped(2);
-              // },
-              enabled: false,
+              onTap: () {
+                _onTabTapped(3);
+              },
             ),
+
             Spacer(), // Añadir un Spacer para empujar el contenido hacia arriba
             Container(
               alignment: Alignment.center,
@@ -591,6 +533,8 @@ class _MyAppState extends State<MyApp> {
         return _buildNotificaciones();
       case 2:
         return _buildAjustes();
+      case 3:
+        return _buildTerminosPrivacidad();
       default:
         return _buildHome();
     }
@@ -679,68 +623,462 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _buildNotificaciones() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Configuración de notificaciones',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            'Soporte y Contacto',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'FFMetaProTitle',
+              color: Color(0xFF002856),
+            ),
           ),
           const SizedBox(height: 20),
-          _buildNotificacionesList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificacionesList() {
-    return Expanded(
-      child: ListView(
-        children: [
-          _buildNotificacionItem("Notificaciones", notificationEnabled),
-          _buildNotificacionItem("Límites", sugerenciasEnabled),
-          _buildNotificacionItem("Alertas", alternativasEnabled),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificacionItem(String itemName, bool itemEnabled) {
-    return Dismissible(
-      key: Key(itemName),
-      onDismissed: (direction) {
-        print("$itemName deslizado en dirección $direction");
-      },
-      background: Container(
-        color: Colors.red,
-        child: const Icon(Icons.delete, color: Colors.white),
-      ),
-      child: Card(
-        child: ListTile(
-          title: Text(itemName),
-          trailing: Switch(
-            value: itemEnabled,
-            onChanged: (value) {
-              setState(() {
-                if (itemName == "Notificaciones") {
-                  notificationEnabled = value;
-                } else if (itemName == "Sugerencias") {
-                  sugerenciasEnabled = value;
-                } else if (itemName == "Alternativas") {
-                  alternativasEnabled = value;
-                }
-              });
-            },
+          _buildContactCard(
+            icon: Icons.phone,
+            title: 'Teléfono de Soporte',
+            content: '+593 98 772 1834\n+593 96 841 5004',
+            actionText: 'Llamar o WhatsApp',
+            onTap: () => _launchPhone('+593987721834'),
           ),
+          const SizedBox(height: 16),
+          _buildContactCard(
+            icon: Icons.email,
+            title: 'Correo Electrónico',
+            content: 'proyecto.ciberadiccion@ucuenca.edu.ec',
+            actionText: 'Enviar correo',
+            onTap: () => _launchEmail('proyecto.ciberadiccion@ucuenca.edu.ec'),
+          ),
+          const SizedBox(height: 16),
+          _buildContactCard(
+            icon: Icons.public,
+            title: 'Más Información',
+            content: 'https://ingsoftware.ucuenca.edu.ec/',
+            actionText: 'Visitar sitio web',
+            onTap: () => _launchURL('https://ingsoftware.ucuenca.edu.ec/'),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Horario de Atención:',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'FFMetaProText4',
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Lunes a Viernes: 08:30 - 13:00',
+            style: TextStyle(
+              fontSize: 16,
+              fontFamily: 'FFMetaProText1',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactCard({
+    required IconData icon,
+    required String title,
+    required String content,
+    required String actionText,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Color(0xFFA51008)),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'FFMetaProText4',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              content,
+              style: const TextStyle(
+                fontSize: 16,
+                fontFamily: 'FFMetaProText1',
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: onTap,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF002856),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  actionText,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'FFMetaProText1',
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// Funciones para lanzar aplicaciones externas
+  Future<void> _launchPhone(String phone) async {
+    final url = 'https://wa.me/$phone';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      throw 'No se pudo abrir WhatsApp';
+    }
+  }
+
+  Future<void> _launchEmail(String email) async {
+    final url = 'mailto:$email';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      throw 'No se pudo abrir el cliente de correo';
+    }
+  }
+
+  Future<void> _launchURL(String url) async {
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      throw 'No se pudo abrir la URL $url';
+    }
+  }
+
+  Widget _buildTerminosPrivacidad() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Términos y Condiciones',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'FFMetaProTitle',
+              color: Color(0xFF002856),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Al usar CIARA, aceptas cumplir con estos términos y condiciones. El uso indebido o violación de estos términos puede resultar en la suspensión o cancelación de tu cuenta.',
+            style: TextStyle(
+              fontSize: 16,
+              fontFamily: 'FFMetaProText1',
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Sección 1
+          _buildTerminoItem(
+            icon: Icons.apps,
+            title: '1. Uso de la App',
+            content:
+                'CIARA está diseñada para promover la salud, el bienestar y la mejora del rendimiento académico mediante recomendaciones personalizadas basadas en tus preferencias.',
+          ),
+
+          // Sección 2
+          _buildTerminoItem(
+            icon: Icons.security,
+            title: '2. Privacidad de los Datos',
+            content:
+                'Respetamos tu privacidad. Los datos que proporcionas son utilizados únicamente para personalizar las recomendaciones y para fines investigativos, no se compartirán con terceros sin tu consentimiento.',
+          ),
+
+          // Sección 3
+          _buildTerminoItem(
+            icon: Icons.update,
+            title: '3. Modificaciones en el Servicio',
+            content:
+                'Nos reservamos el derecho de modificar, suspender o descontinuar temporal o permanentemente cualquier parte de la app sin previo aviso.',
+          ),
+
+          // Sección 4
+          _buildTerminoItem(
+            icon: Icons.copyright,
+            title: '4. Propiedad Intelectual',
+            content:
+                '“Evaluación del impacto de las ciberadicciones en el rendimiento académico, salud y bienestar de los estudiantes universitarios de la ciudad de Cuenca”. Todo el contenido y la tecnología de CIARA son propiedad del proyecto.',
+          ),
+
+          // Sección 5
+          _buildTerminoItem(
+            icon: Icons.warning,
+            title: '5. Limitación de Responsabilidad',
+            content:
+                'CIARA ofrece recomendaciones para disminuir el uso de pantallas, esta versión corresponde a la fase de prueba. No nos responsabilizamos por la precisión de las recomendaciones, usted es libre de decidir la ejecución de las recomendaciones.',
+          ),
+
+          // Sección 6
+          _buildTerminoItem(
+            icon: Icons.block,
+            title: '6. Suspensión de Cuenta',
+            content:
+                'Nos reservamos el derecho de suspender o cancelar tu cuenta si detectamos violaciones a estos términos, uso indebido o cualquier actividad ilegal.',
+          ),
+
+          // Sección 7
+          _buildTerminoItem(
+            icon: Icons.help,
+            title: '7. Soporte y contacto',
+            content:
+                'Si tienes dudas o consultas sobre estos términos, puedes contactarnos a través del soporte de CIARA.',
+          ),
+
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 20),
+
+          // Acuerdo final
+          const Text(
+            'Al continuar usando CIARA, aceptas estos términos y condiciones en su totalidad.',
+            style: TextStyle(
+              fontSize: 16,
+              fontStyle: FontStyle.italic,
+              fontFamily: 'FFMetaProText1',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTerminoItem({
+    required IconData icon,
+    required String title,
+    required String content,
+    bool hasButton = false,
+    String buttonText = '',
+    VoidCallback? onButtonPressed,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Color(0xFF002856)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'FFMetaProText4',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              content,
+              style: const TextStyle(
+                fontSize: 16,
+                fontFamily: 'FFMetaProText1',
+              ),
+            ),
+            if (hasButton && onButtonPressed != null) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: onButtonPressed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFA51008),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    buttonText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'FFMetaProText1',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
   }
 
   Widget _buildAjustes() {
-    return const Center(
-      child: Text('Página de Ajustes'),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: CircleAvatar(
+              radius: 60,
+              backgroundImage: AssetImage('assets/images/icono.png'),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Center(
+            child: Text(
+              'CIARA',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'FFMetaProTitle',
+                color: Color(0xFF002856),
+              ),
+            ),
+          ),
+          const Center(
+            child: Text(
+              'Cyber-Adicction Intervention And Recovery Assistance',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontFamily: 'FFMetaProText1',
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          _buildInfoItem(
+            title: 'Versión',
+            content: '1.0.0',
+          ),
+          _buildInfoItem(
+            title: 'Desarrollado por',
+            content:
+                'Grupo de Investigación de Ingeniería del Software - Universidad de Cuenca',
+          ),
+          _buildInfoItem(
+            title: 'Año de lanzamiento',
+            content: '2025',
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Descripción:',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'FFMetaProText4',
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'CIARA es una aplicación diseñada para ayudar a los estudiantes a monitorear '
+            'y gestionar su tiempo de uso de aplicaciones, con el objetivo de mejorar '
+            'su productividad y rendimiento académico.',
+            style: TextStyle(
+              fontSize: 16,
+              fontFamily: 'FFMetaProText1',
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Características principales:',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'FFMetaProText4',
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildFeatureItem('Monitoreo de tiempo en aplicaciones'),
+          _buildFeatureItem('Estadísticas de uso diario'),
+          _buildFeatureItem('Identificación de horas de mayor uso'),
+          _buildFeatureItem('Recomendaciones personalizadas'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({required String title, required String content}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$title: ',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'FFMetaProText4',
+            ),
+          ),
+          Expanded(
+            child: Text(
+              content,
+              style: const TextStyle(
+                fontSize: 16,
+                fontFamily: 'FFMetaProText1',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(String feature) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.check_circle,
+              color: Color.fromARGB(255, 54, 216, 13), size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              feature,
+              style: const TextStyle(
+                fontSize: 16,
+                fontFamily: 'FFMetaProText1',
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

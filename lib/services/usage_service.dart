@@ -23,6 +23,7 @@ Future<List<EventUsageInfo>> initUsage(DateTime date) async {
 }
 
 class UsageService {
+  static List<int> mayorConsumoVector = [];
   static late String email;
   static Future<int> getTotalUsageToday() async {
     DateTime now = DateTime.now();
@@ -36,23 +37,6 @@ class UsageService {
     Map<String, int> usageByApp = {};
     Map<String, int> foregroundTimes = {};
 
-    // for (var event in events) {
-    //   DateTime eventTime =
-    //       DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
-    //   String packageName = event.packageName ?? 'Unknown';
-
-    //   if (event.eventType == "1") {
-    //     foregroundTimes[packageName] = eventTime.millisecondsSinceEpoch;
-    //   } else if (event.eventType == "2") {
-    //     if (foregroundTimes.containsKey(packageName)) {
-    //       int foregroundTime =
-    //           eventTime.millisecondsSinceEpoch - foregroundTimes[packageName]!;
-    //       usageByApp[packageName] =
-    //           (usageByApp[packageName] ?? 0) + foregroundTime;
-    //       foregroundTimes.remove(packageName);
-    //     }
-    //   }
-    // }
     for (var event in events) {
       DateTime eventTime =
           DateTime.fromMillisecondsSinceEpoch(int.parse(event.timeStamp!));
@@ -83,7 +67,7 @@ class UsageService {
       'com.oppo.launcher',
       'com.sec.android.app.launcher',
       // 'com.example.ciara',
-      'com.android.settings'
+      'com.android.settings',
     ];
     List<UsageInfo> usageInfoList = [];
 
@@ -107,9 +91,6 @@ class UsageService {
         totalTimeAfterFiltering += totalTimeInMilliseconds;
       }
     }
-    // // Convertir el tiempo total a minutos después de la filtración
-    // int totalMinutesAfterFiltering = (totalTimeAfterFiltering / 60000).floor();
-
     return totalTimeAfterFiltering; // Tiempo total de uso en milisegundos
   }
 
